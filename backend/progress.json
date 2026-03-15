@@ -1,0 +1,832 @@
+{
+  "topics": {
+    "system_design": {
+      "title": "System Design",
+      "color": "#6366f1",
+      "icon": "\ud83c\udfd7\ufe0f",
+      "source": "https://github.com/ashishps1/awesome-system-design-resources",
+      "sections": {
+        "core_concepts": {
+          "title": "Core Concepts",
+          "topics": [
+            {
+              "id": "sd_01",
+              "title": "Scalability",
+              "url": "https://algomaster.io/learn/system-design/scalability",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_02",
+              "title": "Availability",
+              "url": "https://algomaster.io/learn/system-design/availability",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_03",
+              "title": "Reliability",
+              "url": "https://algomaster.io/learn/system-design/reliability",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_04",
+              "title": "SPOF",
+              "url": "https://algomaster.io/learn/system-design/single-point-of-failure-spof",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_05",
+              "title": "Latency vs Throughput vs Bandwidth",
+              "url": "https://algomaster.io/learn/system-design/latency-vs-throughput",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_06",
+              "title": "Consistent Hashing",
+              "url": "https://algomaster.io/learn/system-design/consistent-hashing",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_07",
+              "title": "CAP Theorem",
+              "url": "https://algomaster.io/learn/system-design/cap-theorem",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_08",
+              "title": "Failover",
+              "url": "https://www.druva.com/glossary/what-is-a-failover-definition-and-related-faqs",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_09",
+              "title": "Fault Tolerance",
+              "url": "https://www.cockroachlabs.com/blog/what-is-fault-tolerance/",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "networking": {
+          "title": "Networking Fundamentals",
+          "topics": [
+            {
+              "id": "sd_10",
+              "title": "OSI Model",
+              "url": "https://algomaster.io/learn/system-design/osi",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_11",
+              "title": "IP Addresses",
+              "url": "https://algomaster.io/learn/system-design/ip-address",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_12",
+              "title": "DNS",
+              "url": "https://blog.algomaster.io/p/how-dns-actually-works",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_13",
+              "title": "Proxy vs Reverse Proxy",
+              "url": "https://blog.algomaster.io/p/proxy-vs-reverse-proxy-explained",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_14",
+              "title": "HTTP/HTTPS",
+              "url": "https://algomaster.io/learn/system-design/http-https",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_15",
+              "title": "TCP vs UDP",
+              "url": "https://algomaster.io/learn/system-design/tcp-vs-udp",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_16",
+              "title": "Load Balancing",
+              "url": "https://blog.algomaster.io/p/load-balancing-algorithms-explained-with-code",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_17",
+              "title": "Checksums",
+              "url": "https://algomaster.io/learn/system-design/checksums",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "api": {
+          "title": "API Fundamentals",
+          "topics": [
+            {
+              "id": "sd_18",
+              "title": "APIs",
+              "url": "https://algomaster.io/learn/system-design/what-is-an-api",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_19",
+              "title": "API Gateway",
+              "url": "https://blog.algomaster.io/p/what-is-an-api-gateway",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_20",
+              "title": "REST vs GraphQL",
+              "url": "https://blog.algomaster.io/p/rest-vs-graphql",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_21",
+              "title": "WebSockets",
+              "url": "https://blog.algomaster.io/p/websockets",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_22",
+              "title": "Webhooks",
+              "url": "https://algomaster.io/learn/system-design/webhooks",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_23",
+              "title": "Idempotency",
+              "url": "https://algomaster.io/learn/system-design/idempotency",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_24",
+              "title": "Rate Limiting",
+              "url": "https://blog.algomaster.io/p/rate-limiting-algorithms-explained-with-code",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "database": {
+          "title": "Database Fundamentals",
+          "topics": [
+            {
+              "id": "sd_25",
+              "title": "ACID Transactions",
+              "url": "https://algomaster.io/learn/system-design/acid-transactions",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_26",
+              "title": "SQL vs NoSQL",
+              "url": "https://algomaster.io/learn/system-design/sql-vs-nosql",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_27",
+              "title": "Database Indexes",
+              "url": "https://algomaster.io/learn/system-design/indexing",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_28",
+              "title": "Database Sharding",
+              "url": "https://algomaster.io/learn/system-design/sharding",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_29",
+              "title": "Data Replication",
+              "url": "https://redis.com/blog/what-is-data-replication/",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_30",
+              "title": "Database Scaling",
+              "url": "https://blog.algomaster.io/p/system-design-how-to-scale-a-database",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_31",
+              "title": "Bloom Filters",
+              "url": "https://algomaster.io/learn/system-design/bloom-filters",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "caching": {
+          "title": "Caching Fundamentals",
+          "topics": [
+            {
+              "id": "sd_32",
+              "title": "Caching 101",
+              "url": "https://algomaster.io/learn/system-design/what-is-caching",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_33",
+              "title": "Caching Strategies",
+              "url": "https://algomaster.io/learn/system-design/caching-strategies",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_34",
+              "title": "Cache Eviction Policies",
+              "url": "https://blog.algomaster.io/p/7-cache-eviction-strategies",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_35",
+              "title": "Distributed Caching",
+              "url": "https://blog.algomaster.io/p/distributed-caching",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_36",
+              "title": "CDN",
+              "url": "https://algomaster.io/learn/system-design/content-delivery-network-cdn",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "distributed": {
+          "title": "Distributed Systems & Microservices",
+          "topics": [
+            {
+              "id": "sd_37",
+              "title": "HeartBeats",
+              "url": "https://blog.algomaster.io/p/heartbeats-in-distributed-systems",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_38",
+              "title": "Service Discovery",
+              "url": "https://blog.algomaster.io/p/service-discovery-in-distributed-systems",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_39",
+              "title": "Consensus Algorithms",
+              "url": "https://medium.com/@sourabhatta1819/consensus-in-distributed-system-ac79f8ba2b8c",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_40",
+              "title": "Distributed Locking",
+              "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_41",
+              "title": "Gossip Protocol",
+              "url": "http://highscalability.com/blog/2023/7/16/gossip-protocol-explained.html",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_42",
+              "title": "Circuit Breaker",
+              "url": "https://medium.com/geekculture/design-patterns-for-microservices-circuit-breaker-pattern-276249ffab33",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "sd_43",
+              "title": "Distributed Tracing",
+              "url": "https://www.dynatrace.com/news/blog/what-is-distributed-tracing/",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "interview_problems": {
+          "title": "Interview Problems",
+          "topics": [
+            {
+              "id": "sd_44",
+              "title": "Design URL Shortener",
+              "url": "https://algomaster.io/learn/system-design-interviews/design-url-shortener",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "easy"
+            },
+            {
+              "id": "sd_45",
+              "title": "Design Load Balancer",
+              "url": "https://algomaster.io/learn/system-design-interviews/design-load-balancer",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "easy"
+            },
+            {
+              "id": "sd_46",
+              "title": "Design WhatsApp",
+              "url": "https://algomaster.io/learn/system-design-interviews/design-whatsapp",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "medium"
+            },
+            {
+              "id": "sd_47",
+              "title": "Design Spotify",
+              "url": "https://algomaster.io/learn/system-design-interviews/design-spotify",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "medium"
+            },
+            {
+              "id": "sd_48",
+              "title": "Design Instagram",
+              "url": "https://algomaster.io/learn/system-design-interviews/design-instagram",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "medium"
+            },
+            {
+              "id": "sd_49",
+              "title": "Design Uber",
+              "url": "https://www.youtube.com/watch?v=umWABit-wbk",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "hard"
+            },
+            {
+              "id": "sd_50",
+              "title": "Design Google Maps",
+              "url": "https://www.youtube.com/watch?v=jk3yvVfNvds",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "hard"
+            },
+            {
+              "id": "sd_51",
+              "title": "Design Distributed Web Crawler",
+              "url": "https://www.youtube.com/watch?v=BKZxZwUgL3Y",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "hard"
+            },
+            {
+              "id": "sd_52",
+              "title": "Design Zoom",
+              "url": "https://www.youtube.com/watch?v=G32ThJakeHk",
+              "status": "not_started",
+              "notes": "",
+              "difficulty": "hard"
+            }
+          ]
+        }
+      }
+    },
+    "machine_learning": {
+      "title": "Machine Learning",
+      "color": "#10b981",
+      "icon": "\ud83e\udd16",
+      "source": "https://github.com/khangich/machine-learning-interview",
+      "sections": {
+        "ml_fundamentals": {
+          "title": "ML Fundamentals",
+          "topics": [
+            {
+              "id": "ml_01",
+              "title": "Linear Regression",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_02",
+              "title": "Logistic Regression",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_03",
+              "title": "Decision Trees",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_04",
+              "title": "Random Forests",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_05",
+              "title": "SVM",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_06",
+              "title": "Gradient Boosting / XGBoost",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_07",
+              "title": "K-Means Clustering",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_08",
+              "title": "PCA & Dimensionality Reduction",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/fundamentals.md",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "deep_learning": {
+          "title": "Deep Learning",
+          "topics": [
+            {
+              "id": "ml_09",
+              "title": "Neural Networks Basics",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_10",
+              "title": "Backpropagation",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_11",
+              "title": "CNNs",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_12",
+              "title": "RNNs & LSTMs",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_13",
+              "title": "Transformers & Attention",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_14",
+              "title": "Regularization (Dropout, BatchNorm)",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_15",
+              "title": "Optimizers (Adam, SGD)",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/deep_learning.md",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "ml_system_design": {
+          "title": "ML System Design",
+          "topics": [
+            {
+              "id": "ml_16",
+              "title": "Recommendation Systems",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_17",
+              "title": "Search Ranking",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_18",
+              "title": "Fraud Detection",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_19",
+              "title": "Ad Click Prediction",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_20",
+              "title": "NLP Pipeline Design",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_21",
+              "title": "Model Evaluation & Metrics",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/ml-system-design.md",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "ml_coding": {
+          "title": "ML Coding Questions",
+          "topics": [
+            {
+              "id": "ml_22",
+              "title": "Implement Linear Regression from scratch",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/coding.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_23",
+              "title": "Implement Softmax",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/coding.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_24",
+              "title": "Implement K-Means",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/coding.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_25",
+              "title": "Implement Cross-Entropy Loss",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/coding.md",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "ml_26",
+              "title": "Implement Batch Norm",
+              "url": "https://github.com/khangich/machine-learning-interview/blob/master/coding.md",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        }
+      }
+    },
+    "mlops": {
+      "title": "MLOps Zero to Hero",
+      "color": "#f59e0b",
+      "icon": "\u2699\ufe0f",
+      "source": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+      "sections": {
+        "containerization": {
+          "title": "Containerization",
+          "topics": [
+            {
+              "id": "mo_01",
+              "title": "Docker Basics",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": "its done i want revison this one"
+            },
+            {
+              "id": "mo_02",
+              "title": "Writing Dockerfiles",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_03",
+              "title": "Docker Compose",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_04",
+              "title": "Container Registries",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "orchestration": {
+          "title": "Orchestration",
+          "topics": [
+            {
+              "id": "mo_05",
+              "title": "Kubernetes Basics",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_06",
+              "title": "Pods, Deployments, Services",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_07",
+              "title": "Helm Charts",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_08",
+              "title": "Kubeflow Pipelines",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "cicd": {
+          "title": "CI/CD for ML",
+          "topics": [
+            {
+              "id": "mo_09",
+              "title": "GitHub Actions for ML",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_10",
+              "title": "Jenkins Pipelines",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_11",
+              "title": "Automated Testing for ML",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "experiment_tracking": {
+          "title": "Experiment Tracking",
+          "topics": [
+            {
+              "id": "mo_12",
+              "title": "MLflow Basics",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_13",
+              "title": "MLflow Model Registry",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_14",
+              "title": "DVC (Data Version Control)",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_15",
+              "title": "Weights & Biases",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        },
+        "model_serving": {
+          "title": "Model Serving & Monitoring",
+          "topics": [
+            {
+              "id": "mo_16",
+              "title": "FastAPI Model Serving",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_17",
+              "title": "BentoML",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_18",
+              "title": "Model Monitoring (Evidently)",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_19",
+              "title": "Data Drift Detection",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            },
+            {
+              "id": "mo_20",
+              "title": "Prometheus + Grafana for ML",
+              "url": "https://github.com/iam-veeramalla/mlops-zero-to-hero",
+              "status": "not_started",
+              "notes": ""
+            }
+          ]
+        }
+      }
+    }
+  },
+  "streaks": {
+    "current": 1,
+    "longest": 1,
+    "last_study_date": "2026-03-15",
+    "history": [
+      "2026-03-15"
+    ]
+  },
+  "sessions": [
+    {
+      "date": "2026-03-15",
+      "duration_mins": 0.3,
+      "topic_id": null,
+      "topic_title": "General Study"
+    },
+    {
+      "date": "2026-03-15",
+      "duration_mins": 0.1,
+      "topic_id": "mo_01",
+      "topic_title": "Docker Basics"
+    },
+    {
+      "date": "2026-03-15",
+      "duration_mins": 0.1,
+      "topic_id": "mo_01",
+      "topic_title": "Docker Basics"
+    }
+  ],
+  "active_timer": null
+}
