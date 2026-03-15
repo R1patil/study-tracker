@@ -1,3 +1,5 @@
-fastapi,
-uvicorn, 
-pydantic
+fastapi
+uvicorn
+fastapi
+uvicorn
+python-multipart
