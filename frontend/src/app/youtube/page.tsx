@@ -161,15 +161,22 @@ export default function YouTubePage() {
                     </div>
                 </div>
 
-                <button onClick={() => setShowAdd(!showAdd)} style={{
-                    padding: "10px 20px", borderRadius: 10, border: "none",
-                    background: showAdd ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, #ff0000, #cc0000)",
-                    color: showAdd ? "#f87171" : "white",
-                    fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer",
-                    border: showAdd ? "1px solid rgba(239,68,68,0.3)" : "none",
-                } as React.CSSProperties}>
-                    {showAdd ? "✕ Cancel" : "+ Add Video"}
-                </button>
+                <button
+                    onClick={() => setShowAdd(!showAdd)}
+                    style={{
+                        padding: "10px 20px",
+                        borderRadius: 10,
+                        background: showAdd
+                            ? "rgba(239,68,68,0.15)"
+                            : "linear-gradient(135deg, #ff0000, #cc0000)",
+                        color: showAdd ? "#f87171" : "white",
+                        fontFamily: "Syne, sans-serif",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: "pointer",
+                        border: showAdd ? "1px solid rgba(239,68,68,0.3)" : "none",
+                    } as React.CSSProperties}
+                ></button>
             </div>
 
             {/* Stats bar */}
