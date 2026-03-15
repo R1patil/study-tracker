@@ -1,38 +1,82 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-import json
-import os
+import json, os, httpx
 from datetime import date, datetime
-from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Study Tracker API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-DATA_FILE = "progress.json"
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+DATA_DIR = "user_data"
+os.makedirs(DATA_DIR, exist_ok=True)
 
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return get_initial_data()
-    with open(DATA_FILE, "r") as f:
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+
+async def get_current_user(authorization: Optional[str] = Header(None)) -> str:
+    """Verify Supabase JWT and return user_id."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "Missing or invalid Authorization header")
+
+    token = authorization.split(" ", 1)[1]
+
+    # Verify token with Supabase
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": SUPABASE_ANON_KEY,
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(401, "Invalid or expired token")
+
+    user_data = resp.json()
+    return user_data["id"]
+
+
+# ── Per-user JSON storage ─────────────────────────────────────────────────────
+
+
+def user_file(user_id: str) -> str:
+    return os.path.join(DATA_DIR, f"{user_id}.json")
+
+
+def load_user_data(user_id: str) -> dict:
+    path = user_file(user_id)
+    if not os.path.exists(path):
+        data = get_initial_data()
+        save_user_data(user_id, data)
+        return data
+    with open(path, "r") as f:
         return json.load(f)
 
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
+def save_user_data(user_id: str, data: dict):
+    with open(user_file(user_id), "w") as f:
         json.dump(data, f, indent=2)
 
 
-def get_initial_data():
+# ── Curriculum ────────────────────────────────────────────────────────────────
+
+
+def get_initial_data() -> dict:
     return {
         "topics": get_curriculum(),
         "streaks": {"current": 0, "longest": 0, "last_study_date": None, "history": []},
@@ -41,7 +85,7 @@ def get_initial_data():
     }
 
 
-def get_curriculum():
+def get_curriculum() -> dict:
     return {
         "system_design": {
             "title": "System Design",
@@ -845,11 +889,11 @@ def get_curriculum():
     }
 
 
-# ── Models ────────────────────────────────────────────────────────────────────
+# ── Pydantic Models ───────────────────────────────────────────────────────────
 
 
 class StatusUpdate(BaseModel):
-    status: str  # not_started | in_progress | done
+    status: str
 
 
 class NoteUpdate(BaseModel):
@@ -857,7 +901,7 @@ class NoteUpdate(BaseModel):
 
 
 class TimerAction(BaseModel):
-    action: str  # start | stop
+    action: str
     topic_id: Optional[str] = None
     topic_title: Optional[str] = None
 
@@ -867,20 +911,20 @@ class TimerAction(BaseModel):
 
 @app.get("/")
 def root():
-    return {"status": "Study Tracker API running"}
+    return {"status": "Study Tracker API running ✅"}
 
 
 @app.get("/progress")
-def get_progress():
-    return load_data()
+async def get_progress(user_id: str = Depends(get_current_user)):
+    return load_user_data(user_id)
 
 
 @app.get("/stats")
-def get_stats():
-    data = load_data()
+async def get_stats(user_id: str = Depends(get_current_user)):
+    data = load_user_data(user_id)
     topics = data["topics"]
-
     stats = {}
+
     for track_key, track in topics.items():
         total = done = in_progress = 0
         for section in track["sections"].values():
@@ -901,7 +945,6 @@ def get_stats():
             "percent": round((done / total) * 100, 1) if total > 0 else 0,
         }
 
-    # Overall
     all_total = sum(s["total"] for s in stats.values())
     all_done = sum(s["done"] for s in stats.values())
 
@@ -913,16 +956,18 @@ def get_stats():
             "percent": round((all_done / all_total) * 100, 1) if all_total > 0 else 0,
         },
         "streaks": data["streaks"],
-        "sessions": data["sessions"][-10:],  # last 10 sessions
+        "sessions": data["sessions"][-10:],
     }
 
 
 @app.patch("/topic/{topic_id}/status")
-def update_status(topic_id: str, body: StatusUpdate):
+async def update_status(
+    topic_id: str, body: StatusUpdate, user_id: str = Depends(get_current_user)
+):
     if body.status not in ["not_started", "in_progress", "done"]:
         raise HTTPException(400, "Invalid status")
 
-    data = load_data()
+    data = load_user_data(user_id)
     found = False
     for track in data["topics"].values():
         for section in track["sections"].values():
@@ -935,30 +980,37 @@ def update_status(topic_id: str, body: StatusUpdate):
     if not found:
         raise HTTPException(404, "Topic not found")
 
-    # Update streak when marking done
     if body.status == "done":
         _update_streak(data)
 
-    save_data(data)
+    save_user_data(user_id, data)
     return {"success": True, "topic_id": topic_id, "status": body.status}
 
 
 @app.patch("/topic/{topic_id}/notes")
-def update_notes(topic_id: str, body: NoteUpdate):
-    data = load_data()
+async def update_notes(
+    topic_id: str, body: NoteUpdate, user_id: str = Depends(get_current_user)
+):
+    data = load_user_data(user_id)
     for track in data["topics"].values():
         for section in track["sections"].values():
             for t in section["topics"]:
                 if t["id"] == topic_id:
                     t["notes"] = body.notes
-                    save_data(data)
+                    save_user_data(user_id, data)
                     return {"success": True}
     raise HTTPException(404, "Topic not found")
 
 
+@app.get("/timer")
+async def get_timer(user_id: str = Depends(get_current_user)):
+    data = load_user_data(user_id)
+    return {"active_timer": data.get("active_timer")}
+
+
 @app.post("/timer")
-def control_timer(body: TimerAction):
-    data = load_data()
+async def control_timer(body: TimerAction, user_id: str = Depends(get_current_user)):
+    data = load_user_data(user_id)
     today = date.today().isoformat()
     now = datetime.now().isoformat()
 
@@ -984,17 +1036,11 @@ def control_timer(body: TimerAction):
             data["active_timer"] = None
             _update_streak(data)
 
-    save_data(data)
+    save_user_data(user_id, data)
     return {"success": True, "timer": data.get("active_timer")}
 
 
-@app.get("/timer")
-def get_timer():
-    data = load_data()
-    return {"active_timer": data.get("active_timer")}
-
-
-def _update_streak(data):
+def _update_streak(data: dict):
     today = date.today().isoformat()
     streaks = data["streaks"]
     history = streaks.get("history", [])
@@ -1009,21 +1055,11 @@ def _update_streak(data):
     else:
         from datetime import timedelta
 
-        last_date = date.fromisoformat(last)
-        today_date = date.today()
-        diff = (today_date - last_date).days
+        diff = (date.today() - date.fromisoformat(last)).days
         if diff == 1:
             streaks["current"] += 1
-        elif diff == 0:
-            pass  # same day, no change
-        else:
+        elif diff > 1:
             streaks["current"] = 1
 
     streaks["last_study_date"] = today
     streaks["longest"] = max(streaks.get("longest", 0), streaks["current"])
-
-
-@app.post("/reset")
-def reset_progress():
-    save_data(get_initial_data())
-    return {"success": True, "message": "Progress reset"}

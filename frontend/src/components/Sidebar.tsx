@@ -61,7 +61,21 @@ export default function Sidebar({ tracks, activeTrack, onSelect }: { tracks: any
             </nav>
 
             {/* Footer */}
-            <div style={{ borderTop: "1px solid var(--border)", padding: 16 }}>
+            <div style={{ borderTop: "1px solid var(--border)", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+
+                {/* YouTube Challenges link */}
+                <a href="/youtube"
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(255,68,68,0.25)", background: "rgba(255,0,0,0.06)", textDecoration: "none", transition: "all 0.2s" }}
+                    onMouseEnter={e => { (e.currentTarget.style.background = "rgba(255,0,0,0.12)"); (e.currentTarget.style.borderColor = "rgba(255,68,68,0.5)"); }}
+                    onMouseLeave={e => { (e.currentTarget.style.background = "rgba(255,0,0,0.06)"); (e.currentTarget.style.borderColor = "rgba(255,68,68,0.25)"); }}
+                >
+                    <div style={{ width: 24, height: 24, borderRadius: 6, background: "#ff0000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>▶</div>
+                    <div>
+                        <div style={{ color: "#ff4444", fontFamily: "Syne, sans-serif", fontWeight: 600, fontSize: 12 }}>YouTube Challenges</div>
+                        <div style={{ color: "var(--text-secondary)", fontFamily: "monospace", fontSize: 9 }}>@R-B107</div>
+                    </div>
+                </a>
+
                 <a href="https://github.com/ashishps1/awesome-system-design-resources" target="_blank" rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-secondary)", fontSize: 11, fontFamily: "monospace", textDecoration: "none" }}>
                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
