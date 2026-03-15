@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";
+const BASE = "https://study-tracker-backend-nbho.onrender.com";
 
 export async function getProgress() {
     const res = await fetch(`${BASE}/progress`, { cache: "no-store" });
