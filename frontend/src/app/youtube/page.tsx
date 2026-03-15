@@ -176,7 +176,9 @@ export default function YouTubePage() {
                         cursor: "pointer",
                         border: showAdd ? "1px solid rgba(239,68,68,0.3)" : "none",
                     } as React.CSSProperties}
-                ></button>
+                >
+                    {showAdd ? "✕ Cancel" : "+ Add Video"}
+                </button>
             </div>
 
             {/* Stats bar */}
