@@ -21,13 +21,29 @@ export default function LoginPage() {
         window.location.href = "/dashboard";
     };
 
+    // const handleGoogle = async () => {
+    //     setGoogleLoading(true);
+    //     const { error } = await supabase.auth.signInWithOAuth({
+    //         provider: "google",
+    //         options: { redirectTo: `${window.location.origin}/auth/callback` },
+    //     });
+    //     if (error) { setError(error.message); setGoogleLoading(false); }
+    // };
     const handleGoogle = async () => {
         setGoogleLoading(true);
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
-            options: { redirectTo: `${window.location.origin}/auth/callback` },
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+                scopes: "https://www.googleapis.com/auth/calendar.events"
+            }
         });
-        if (error) { setError(error.message); setGoogleLoading(false); }
+
+        if (error) {
+            setError(error.message);
+            setGoogleLoading(false);
+        }
     };
 
     return (

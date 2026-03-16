@@ -15,6 +15,7 @@ app.add_middleware(
     allow_origins=[
         "https://study-tracker-patil.vercel.app",
         os.getenv("FRONTEND_URL", ""),
+        "*",
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
