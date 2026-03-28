@@ -12,6 +12,7 @@
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![gitcgr](https://gitcgr.com/badge/R1patil/study-tracker.svg)](https://gitcgr.com/R1patil/study-tracker)
 
 <br/>
 
