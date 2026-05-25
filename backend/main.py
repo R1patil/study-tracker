@@ -1075,6 +1075,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import json, os, httpx
+import sys
+import shutil
 from datetime import date, datetime
 from dotenv import load_dotenv
 
@@ -1095,6 +1097,156 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 DATA_DIR = "user_data"
 os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def setup_coral_sources_prod():
+    """Generates the Coral source YAMLs and adds them to Coral CLI in production (Linux/Docker)."""
+    import subprocess
+    
+    # Only run in production Linux/Docker environment where wsl is not used/present
+    if sys.platform == "win32" and shutil.which("wsl"):
+        print("Running in local Windows environment with WSL. Skipping auto source registration.")
+        return
+        
+    print("Initializing Coral sources in production Linux/Docker container...")
+    
+    sources_dir = "/app/coral_sources"
+    os.makedirs(sources_dir, exist_ok=True)
+    
+    sources = {
+        "activity.yaml": """name: student_activity
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: activity
+    description: Tracked screen-time activity of the student
+    source:
+      location: file:///app/user_data/
+      glob: "activity.jsonl"
+    columns:
+      - name: timestamp
+        type: Utf8
+      - name: app
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: duration_seconds
+        type: Int64
+      - name: is_productive
+        type: Boolean
+""",
+        "calendar.yaml": """name: student_calendar
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: events
+    description: Calendar events including exams, lectures, and planned study sessions
+    source:
+      location: file:///app/user_data/
+      glob: "calendar.jsonl"
+    columns:
+      - name: event_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: start_time
+        type: Utf8
+      - name: end_time
+        type: Utf8
+      - name: category
+        type: Utf8
+""",
+        "google_searches.yaml": """name: student_searches
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: searches
+    description: Google searches conducted by the student for study help
+    source:
+      location: file:///app/user_data/
+      glob: "google_searches.jsonl"
+    columns:
+      - name: query
+        type: Utf8
+      - name: timestamp
+        type: Utf8
+      - name: category
+        type: Utf8
+""",
+        "progress.yaml": """name: student_progress
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: progress
+    description: Learning and study progress for curriculum topics
+    source:
+      location: file:///app/user_data/
+      glob: "progress.jsonl"
+    columns:
+      - name: topic_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: track
+        type: Utf8
+      - name: section
+        type: Utf8
+      - name: status
+        type: Utf8
+      - name: notes
+        type: Utf8
+      - name: updated_at
+        type: Utf8
+""",
+        "youtube.yaml": """name: student_youtube
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: videos
+    description: YouTube video challenges and watched history for learning topics
+    source:
+      location: file:///app/user_data/
+      glob: "youtube.jsonl"
+    columns:
+      - name: video_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: channel
+        type: Utf8
+      - name: topic_id
+        type: Utf8
+      - name: status
+        type: Utf8
+      - name: watched_at
+        type: Utf8
+"""
+    }
+    
+    for filename, content in sources.items():
+        filepath = os.path.join(sources_dir, filename)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+            
+        print(f"Adding Coral source spec: {filename}")
+        cmd = ["coral", "source", "add", "--file", filepath]
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            print(f"Successfully added source: {filename}. Output: {res.stdout.strip()}")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to add source {filename}: {e.stderr or e.stdout}")
+        except Exception as e:
+            print(f"Error executing coral source add for {filename}: {str(e)}")
+
+
+@app.on_event("startup")
+def startup_event():
+    setup_coral_sources_prod()
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -2363,9 +2515,15 @@ async def log_search(body: SearchLog, user_id: str = Depends(get_current_user)):
 from groq import Groq
 
 def execute_coral_sql(query: str) -> str:
-    """Executes a SQL query in Coral inside WSL and returns the output in JSON format."""
+    """Executes a SQL query in Coral inside WSL (on Windows) or directly (on Linux) and returns the output in JSON format."""
     escaped_query = query.replace('"', '\\"')
-    cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
+    
+    # OS-Aware CLI commands
+    if sys.platform == "win32" and shutil.which("wsl"):
+        cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
+    else:
+        cmd = ["coral", "sql", "--format", "json", escaped_query]
+        
     try:
         import subprocess
         result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", check=True)
