@@ -1,0 +1,17 @@
+name: student_searches
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: searches
+    description: Google searches conducted by the student for study help
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "google_searches.jsonl"
+    columns:
+      - name: query
+        type: Utf8
+      - name: timestamp
+        type: Utf8
+      - name: category
+        type: Utf8

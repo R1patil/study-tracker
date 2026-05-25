@@ -1,0 +1,23 @@
+name: student_youtube
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: videos
+    description: YouTube video challenges and watched history for learning topics
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "youtube.jsonl"
+    columns:
+      - name: video_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: channel
+        type: Utf8
+      - name: topic_id
+        type: Utf8
+      - name: status
+        type: Utf8
+      - name: watched_at
+        type: Utf8

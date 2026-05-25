@@ -268,6 +268,7 @@ export interface CustomTrack {
     source: string;
     repoOwner: string;
     repoName: string;
+    branch?: string;
     addedAt: string;
     sections: Record<string, CustomSection>;
 }
@@ -598,16 +599,19 @@ export function buildCustomTrack(
     repo: string,
     repoUrl: string,
     aiOutput: { sections: Record<string, CustomSection> },
-    existingCount: number
+    existingCount: number,
+    branch?: string
 ): CustomTrack {
+    const title = repo.replace(/-/g, " ").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     return {
         id: `custom_${Date.now()}`,
-        title: repo.replace(/-/g, " ").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+        title: branch ? `${title} (${branch})` : title,
         color: COLORS[existingCount % COLORS.length],
         icon: ICONS[existingCount % ICONS.length],
         source: repoUrl,
         repoOwner: owner,
         repoName: repo,
+        branch,
         addedAt: new Date().toISOString(),
         sections: aiOutput.sections,
     };

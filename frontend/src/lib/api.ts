@@ -77,3 +77,20 @@ export const controlTimer = (action: string, topicId?: string, topicTitle?: stri
     apiFetch("/timer", { method: "POST", body: JSON.stringify({ action, topic_id: topicId, topic_title: topicTitle }) });
 
 export const getRecommendations = () => apiFetch('/recommendations');
+export const chatWithJarvis = (message: string, history: any[]) => 
+    apiFetch('/agent/chat', { method: 'POST', body: JSON.stringify({ message, history }) });
+export const logGoogleSearch = (query: string, category?: string) => 
+    apiFetch('/searches/log', { method: 'POST', body: JSON.stringify({ query, category }) });
+export const getActivitySummary = () => apiFetch('/activity/summary');
+export const getGithubBranches = (owner: string, repo: string) =>
+    apiFetch(`/github/branches?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`);
+export const getGithubStructure = (owner: string, repo: string, branch: string) =>
+    apiFetch(`/github/structure?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}`);
+export const analyzeGithubRepo = (owner: string, repo: string, branch: string, files: any[]) =>
+    apiFetch(`/github/analyze`, { method: "POST", body: JSON.stringify({ owner, repo, branch, files }) });
+export const getGithubFileContent = (owner: string, repo: string, path: string, ref: string) =>
+    apiFetch(`/github/file-content?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}&ref=${encodeURIComponent(ref)}`);
+export const getGithubBranchSummary = (owner: string, repo: string, branch: string) =>
+    apiFetch(`/github/branch-summary?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}`);
+export const getProfile = () => apiFetch('/profile');
+export const updateProfile = (profile: any) => apiFetch('/profile', { method: 'POST', body: JSON.stringify(profile) });

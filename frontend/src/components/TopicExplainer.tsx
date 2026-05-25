@@ -1,10 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getGithubFileContent } from "@/lib/api";
 
 interface TopicExplainerProps {
+    topicId?: string;
     topicTitle: string;
     trackTitle: string;
     repoContext?: string;
+    topicUrl?: string;
+    initialNotes?: string;
+    onSaveNotes?: (notes: string) => Promise<void> | void;
     onClose: () => void;
 }
 
@@ -19,11 +24,31 @@ interface Explanation {
 const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY || "";
 
 export default function TopicExplainer({
-    topicTitle, trackTitle, repoContext, onClose,
+    topicTitle, trackTitle, repoContext, topicUrl, initialNotes, onSaveNotes, onClose,
 }: TopicExplainerProps) {
     const [data, setData] = useState<Explanation | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [notes, setNotes] = useState(initialNotes || "");
+    const [savingNotes, setSavingNotes] = useState(false);
+    const [savedFeedback, setSavedFeedback] = useState(false);
+
+    useEffect(() => {
+        setNotes(initialNotes || "");
+    }, [initialNotes]);
+
+    const handleNotesSave = async () => {
+        if (!onSaveNotes) return;
+        setSavingNotes(true);
+        try {
+            await onSaveNotes(notes);
+            setSavedFeedback(true);
+            setTimeout(() => setSavedFeedback(false), 2000);
+        } catch {
+            // ignore
+        }
+        setSavingNotes(false);
+    };
 
     useEffect(() => {
         fetchExplanation();
@@ -34,12 +59,32 @@ export default function TopicExplainer({
         setError("");
         setData(null);
 
+        let fileContent = "";
+        if (topicUrl) {
+            const match = topicUrl.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)/);
+            if (match) {
+                const owner = match[1];
+                const repo = match[2];
+                const ref = match[3];
+                const path = match[4];
+                try {
+                    const res = await getGithubFileContent(owner, repo, path, ref);
+                    if (res && res.content) {
+                        fileContent = res.content;
+                    }
+                } catch {
+                    // ignore
+                }
+            }
+        }
+
         const prompt = `You are an expert software engineer and teacher.
 Given a topic from a GitHub repository, generate a structured explanation.
 
 Topic: "${topicTitle}"
 Track/Context: "${trackTitle}"
 ${repoContext ? `Repo Summary: ${repoContext.slice(0, 300)}` : ""}
+${fileContent ? `Exact File Content to explain (first 3000 chars):\n${fileContent.slice(0, 3000)}` : ""}
 
 Return ONLY this exact JSON (no markdown, no backticks):
 {
@@ -180,21 +225,73 @@ Return ONLY this exact JSON (no markdown, no backticks):
 
                             {/* Key points */}
                             {data.keyPoints && data.keyPoints.length > 0 && (
-                                <Section icon="📌" title="Key Points" color="#e879f9">
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                        {data.keyPoints.map((point, i) => (
-                                            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                                                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,121,249,0.15)", border: "1px solid rgba(232,121,249,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#e879f9", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
-                                                    {i + 1}
-                                                </div>
-                                                <p style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.6, fontFamily: "DM Sans,sans-serif" }}>{point}</p>
-                                            </div>
-                                        ))}
+                                 <Section icon="📌" title="Key Points" color="#e879f9">
+                                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                         {data.keyPoints.map((point, i) => (
+                                             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                                 <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,121,249,0.15)", border: "1px solid rgba(232,121,249,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#e879f9", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
+                                                     {i + 1}
+                                                 </div>
+                                                 <p style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 1.6, fontFamily: "DM Sans,sans-serif" }}>{point}</p>
+                                             </div>
+                                         ))}
+                                     </div>
+                                 </Section>
+                             )}
+
+                             {/* User notes & revision notes */}
+                             {onSaveNotes && (
+                                 <Section icon="📝" title="My Revision Notes" color="#6366f1">
+                                     <textarea
+                                         value={notes}
+                                         onChange={e => setNotes(e.target.value)}
+                                         placeholder="Write key revision takeaways, study notes, or questions here..."
+                                         rows={4}
+                                         style={{
+                                             width: "100%",
+                                             background: "var(--bg)",
+                                             border: "1px solid var(--border)",
+                                             borderRadius: 8,
+                                             padding: "10px 12px",
+                                             fontSize: 12,
+                                             fontFamily: "monospace",
+                                             color: "var(--text-primary)",
+                                             resize: "none",
+                                             outline: "none",
+                                             marginTop: 4,
+                                             transition: "border-color 0.2s"
+                                         }}
+                                         onFocus={e => (e.target.style.borderColor = "#6366f1")}
+                                         onBlur={e => (e.target.style.borderColor = "var(--border)")}
+                                     />
+                                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+                                         <button
+                                             onClick={handleNotesSave}
+                                             disabled={savingNotes}
+                                             style={{
+                                                 padding: "6px 14px",
+                                                 borderRadius: 8,
+                                                 border: "none",
+                                                 background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+                                                 color: "white",
+                                                 fontSize: 11,
+                                                 fontFamily: "Syne,sans-serif",
+                                                 fontWeight: 700,
+                                                 cursor: "pointer"
+                                             }}
+                                         >
+                                             {savingNotes ? "Saving..." : "Save Notes"}
+                                        </button>
+                                        {savedFeedback && (
+                                            <span style={{ fontSize: 11, color: "#10b981", fontFamily: "monospace" }}>
+                                                ✓ Saved!
+                                            </span>
+                                        )}
                                     </div>
-                                </Section>
-                            )}
-                        </>
-                    )}
+                                 </Section>
+                             )}
+                         </>
+                     )}
                 </div>
 
                 {/* Footer */}

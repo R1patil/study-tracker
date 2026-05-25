@@ -1,0 +1,21 @@
+name: student_calendar
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: events
+    description: Calendar events including exams, lectures, and planned study sessions
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "calendar.jsonl"
+    columns:
+      - name: event_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: start_time
+        type: Utf8
+      - name: end_time
+        type: Utf8
+      - name: category
+        type: Utf8

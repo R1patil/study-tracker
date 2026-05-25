@@ -489,6 +489,9 @@ import UserMenu from "@/components/auth/UserMenu";
 import ReviewToday from "@/components/ReviewToday";
 import DailyRecommendations from "@/components/DailyRecommendations";
 import CustomTrackView from "@/components/CustomTrackView";
+import JarvisChat from "@/components/JarvisChat";
+import SearchWidget from "@/components/SearchWidget";
+import FocusMetricsWidget from "@/components/FocusMetricsWidget";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
@@ -522,6 +525,7 @@ export default function DashboardPage() {
         supabase.auth.getUser().then(({ data }) => {
             setUser(data.user);
             if (data.user) {
+
                 setUserId(data.user.id);
                 refreshCustomTracks(data.user.id);
             }
@@ -529,7 +533,6 @@ export default function DashboardPage() {
         refresh();
     }, [refresh]);
 
-    // Build sidebar track data including custom tracks
     const allTracksForSidebar = stats ? {
         ...stats.tracks,
         ...Object.fromEntries(
@@ -564,7 +567,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh" }}>
+        <div className="flex min-h-screen bg-bg text-text-primary">
             <Sidebar
                 tracks={allTracksForSidebar}
                 activeTrack={activeTrack}
@@ -572,37 +575,41 @@ export default function DashboardPage() {
                 customTracks={customTracks}
             />
 
-            <main style={{ flex: 1, marginLeft: 256, display: "flex", flexDirection: "column", maxWidth: "calc(100vw - 256px)" }}>
-                {/* Top bar */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "14px 32px", borderBottom: "1px solid var(--border)", background: "var(--surface)", position: "sticky", top: 0, zIndex: 40 }}>
+            <main className="flex-1 ml-64 flex flex-col min-w-0">
+                <div className="flex items-center justify-end px-8 py-4 border-b border-border bg-surface sticky top-0 z-40">
                     {user && <UserMenu user={user} />}
                 </div>
 
-                {/* Content */}
-                <div style={{ padding: "32px", display: "flex", flexDirection: "column", gap: "24px" }}>
-                    <StatsHeader stats={stats} />
-                    <DailyRecommendations />
-                    <ReviewToday />
-                    <TimerWidget onSessionEnd={refresh} />
+                <div className="p-8 flex flex-col xl:flex-row gap-8 min-w-0">
+                    <div className="flex-1 flex flex-col gap-6 min-w-0">
+                        <StatsHeader stats={stats} />
+                        <DailyRecommendations />
+                        <ReviewToday />
+                        <TimerWidget onSessionEnd={refresh} />
 
-                    {/* Default tracks */}
-                    {!isCustomTrack && progress && (
-                        <TrackView
-                            trackKey={activeTrack}
-                            track={progress.topics[activeTrack]}
-                            stats={stats.tracks[activeTrack]}
-                            onUpdate={refresh}
-                        />
-                    )}
+                        {!isCustomTrack && progress && (
+                            <TrackView
+                                trackKey={activeTrack}
+                                track={progress.topics[activeTrack]}
+                                stats={stats.tracks[activeTrack]}
+                                onUpdate={refresh}
+                            />
+                        )}
 
-                    {/* Custom tracks */}
-                    {isCustomTrack && userId && (
-                        <CustomTrackView
-                            track={customTracks.find(t => t.id === activeTrack)!}
-                            userId={userId}
-                            onUpdate={() => refreshCustomTracks(userId)}
-                        />
-                    )}
+                        {isCustomTrack && userId && (
+                            <CustomTrackView
+                                track={customTracks.find(t => t.id === activeTrack)!}
+                                userId={userId}
+                                onUpdate={() => refreshCustomTracks(userId)}
+                            />
+                        )}
+                    </div>
+
+                    <div className="w-full xl:w-[380px] shrink-0 flex flex-col gap-6">
+                        <FocusMetricsWidget />
+                        <SearchWidget />
+                        <JarvisChat />
+                    </div>
                 </div>
             </main>
         </div>

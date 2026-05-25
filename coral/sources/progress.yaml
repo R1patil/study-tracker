@@ -1,0 +1,25 @@
+name: student_progress
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: progress
+    description: Learning and study progress for curriculum topics
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "progress.jsonl"
+    columns:
+      - name: topic_id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: track
+        type: Utf8
+      - name: section
+        type: Utf8
+      - name: status
+        type: Utf8
+      - name: notes
+        type: Utf8
+      - name: updated_at
+        type: Utf8
