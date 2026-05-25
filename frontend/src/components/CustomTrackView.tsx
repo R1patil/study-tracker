@@ -468,13 +468,22 @@ export default function CustomTrackView({
             </div>
 
             {/* AI Explainer panel */}
-            {explainerTopic && (
-                <TopicExplainer
-                    topicTitle={explainerTopic.title}
-                    trackTitle={track.title}
-                    onClose={() => setExplainerTopic(null)}
-                />
-            )}
+            {explainerTopic && (() => {
+                const topicObj = Object.values(track.sections).flatMap(s => s.topics).find(t => t.id === explainerTopic.id);
+                return (
+                    <TopicExplainer
+                        topicTitle={explainerTopic.title}
+                        trackTitle={track.title}
+                        topicUrl={topicObj?.url}
+                        initialNotes={topicObj?.notes || ""}
+                        onSaveNotes={(newNotes) => {
+                            updateCustomTopicNotes(userId, track.id, explainerTopic.id, newNotes);
+                            onUpdate();
+                        }}
+                        onClose={() => setExplainerTopic(null)}
+                    />
+                );
+            })()}
         </>
     );
 }

@@ -442,6 +442,18 @@ export default function Sidebar({
                     </div>
                 </a>
 
+                {/* Autofill Profile */}
+                <a href="/profile" style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(99,102,241,0.2)", background: "rgba(99,102,241,0.05)", textDecoration: "none", transition: "all 0.2s" }}
+                    onMouseEnter={e => { (e.currentTarget.style.background = "rgba(99,102,241,0.1)"); }}
+                    onMouseLeave={e => { (e.currentTarget.style.background = "rgba(99,102,241,0.05)"); }}
+                >
+                    <span style={{ fontSize: 14 }}>👤</span>
+                    <div>
+                        <div style={{ color: "#6366f1", fontFamily: "Syne,sans-serif", fontWeight: 600, fontSize: 11 }}>Autofill Profile</div>
+                        <div style={{ color: "var(--text-secondary)", fontFamily: "monospace", fontSize: 9 }}>Job Applications</div>
+                    </div>
+                </a>
+
                 {/* GitHub link */}
                 <a href="https://github.com/R1patil/study-tracker" target="_blank" rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-secondary)", fontSize: 10, fontFamily: "monospace", textDecoration: "none", padding: "4px 6px" }}>

@@ -1,7 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 
 :root {
@@ -82,4 +80,48 @@ body {
 
 .timer-blink {
   animation: timerBlink 1.4s ease-in-out infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(17, 17, 24, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-premium {
+  background: linear-gradient(135deg, rgba(20, 20, 35, 0.6) 0%, rgba(10, 10, 15, 0.8) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Glow & Neon */
+.neon-glow-indigo {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+.neon-glow-emerald {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.neon-glow-red {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    border-color: rgba(99, 102, 241, 0.6);
+  }
+}
+
+.jarvis-avatar-pulse {
+  animation: pulse-glow 3s infinite ease-in-out;
 }

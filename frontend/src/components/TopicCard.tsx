@@ -605,6 +605,12 @@ export default function TopicCard({
                 <TopicExplainer
                     topicTitle={topic.title}
                     trackTitle={trackTitle || "Study Track"}
+                    topicUrl={topic.url}
+                    initialNotes={topic.notes || ""}
+                    onSaveNotes={async (newNotes) => {
+                        await updateNotes(topic.id, newNotes);
+                        onUpdate();
+                    }}
                     onClose={() => setShowExplainer(false)}
                 />
             )}

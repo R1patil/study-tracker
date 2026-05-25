@@ -1,0 +1,21 @@
+name: student_activity
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: activity
+    description: Tracked screen-time activity of the student
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "activity.jsonl"
+    columns:
+      - name: timestamp
+        type: Utf8
+      - name: app
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: duration_seconds
+        type: Int64
+      - name: is_productive
+        type: Boolean

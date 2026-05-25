@@ -1,0 +1,116 @@
+# Student OS ("Jarvis" for Students) — AI Agent Data Layer powered by Coral
+
+Student OS is a next-generation study platform and productivity coach ("Jarvis") that monitors a student's learning progress, coding consistency, scheduling, and distraction patterns, and uses an AI mentor to guide them. 
+
+By leveraging **Coral** as a unified SQL data layer, the AI agent can seamlessly query and join data across disparate sources—including local calendar files, markdown study notes, local screen-time logs, YouTube watch histories, and GitHub activity APIs.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **WSL Integration:** Since you are on Windows and Coral's native installation works beautifully inside WSL (Ubuntu), we have successfully installed Coral CLI 0.3.0 in your WSL environment. The FastAPI backend will run SQL queries by invoking the Coral binary in WSL using a subprocess wrapper (`wsl /home/rahul/.local/bin/coral sql ...`).
+
+> [!WARNING]
+> **API Keys and Auth:** You will need to provide a `GITHUB_TOKEN` for GitHub integration, and a `GROQ_API_KEY` (or `GEMINI_API_KEY` / `OPENAI_API_KEY`) for the AI agent backend. We will store these securely in `backend/.env`.
+
+> [!TIP]
+> **New Source Bounty ($100):** We are designing a custom YouTube API connector spec (`coral/sources/youtube.yaml`). Once tested, you can submit this to the Coral maintainers to claim the official **New Source Bounty** prize of $100!
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> 1. **LLM Provider Preference:** Do you prefer using **Groq** (fast, free tier), **Gemini** (rich context), or **OpenAI** for the AI Agent's intelligence? The implementation details assume Groq/Gemini but can be adjusted easily.
+> 2. **Screen Activity Logging:** The proposed system includes a lightweight background python script (`activity_logger.py`) that polls your active window title on your host machine and saves it directly to a local JSONL file so Coral can query it. Would you like this daemon script to run automatically when the backend starts, or would you prefer to run it manually when you study?
+
+---
+
+## Proposed Changes
+
+We will restructure the project into three main components:
+1. **Coral Configs & Sources** (`/coral`): Definitions for the SQL schema maps.
+2. **Backend Services** (`/backend`): Refactored FastAPI server, the background screen activity logger, and the tool-calling AI agent.
+3. **Frontend Application** (`/frontend`): A modern dashboard using Next.js 14, Tailwind, and React.
+
+---
+
+### 1. Coral Configs & Source Specs (Unified Data Layer)
+
+We will define custom specifications to expose files and APIs to Coral as SQL tables.
+
+#### [NEW] [activity.yaml](file:///d:/study-tracker/coral/sources/activity.yaml)
+Exposes the local screen-time activity JSONL file as a SQL table `activity` under schema `student_activity`.
+- Columns: `timestamp` (DateTime), `app` (String), `title` (String), `duration_seconds` (Integer), `is_productive` (Boolean).
+
+#### [NEW] [progress.yaml](file:///d:/study-tracker/coral/sources/progress.yaml)
+Exposes the local curriculum progress JSONL file as a SQL table `progress` under schema `student_progress`.
+- Columns: `topic_id` (String), `title` (String), `track` (String), `section` (String), `status` (String), `notes` (String), `updated_at` (DateTime).
+
+#### [NEW] [calendar.yaml](file:///d:/study-tracker/coral/sources/calendar.yaml)
+Exposes local calendar events (exams, lectures, study windows) as a SQL table `events` under schema `student_calendar`.
+- Columns: `event_id` (String), `title` (String), `start_time` (DateTime), `end_time` (DateTime), `category` (String: 'exam' | 'study' | 'lecture').
+
+#### [NEW] [youtube.yaml](file:///d:/study-tracker/coral/sources/youtube.yaml)
+Custom connector spec for the YouTube API. It defines a table `videos` to retrieve details of study playlists or watch history. Fits the **New Source Bounty** spec.
+
+---
+
+### 2. Backend Services (AI Agent & Activity Logger)
+
+#### [NEW] [activity_logger.py](file:///d:/study-tracker/backend/activity_logger.py)
+A lightweight background python daemon that:
+- Uses `pygetwindow` or native Win32 API to fetch the active foreground window title every 10 seconds.
+- Categorizes it as productive (e.g. VS Code, LeetCode, GitHub, study-tracker) or distraction (e.g. Netflix, Twitter, games).
+- Appends logs directly to `backend/user_data/activity.jsonl`.
+
+#### [MODIFY] [main.py](file:///d:/study-tracker/backend/main.py)
+We will rewrite the backend to integrate the Coral client and AI agent routes.
+- **Uncomment core server code**: Clean up the commented-out code blocks.
+- **Implement `/agent/chat` route**:
+  - Sets up an LLM conversation chain (using `groq` or `google-generativeai`).
+  - Implements a tool `execute_coral_query(sql_query: str) -> str` which runs `/home/rahul/.local/bin/coral sql "[query]"` in WSL via `subprocess` and returns the output.
+  - Generates responses based on cross-source analysis (e.g. joining `activity`, `progress`, and `calendar`).
+- **Implement `/activity/summary` route**: Aggregates screen time logs for the dashboard charts.
+- **Keep Supabase Auth Integration**: Ensure authentication remains functional.
+
+---
+
+### 3. Frontend Application (Premium Next.js Dashboard)
+
+We will redesign the dashboard with premium, wowed aesthetics: a modern dark mode, glowing borders, custom typography (Outfit), glassmorphism widgets, and interactive charts.
+
+#### [MODIFY] [globals.css](file:///d:/study-tracker/frontend/src/app/globals.css)
+- Implement custom design tokens: Indigo/Violet gradients, dark gray slate backgrounds, glowing focus shadows.
+- Add animation keyframes for fade-ins and pulse effects.
+
+#### [NEW] [JarvisChat.tsx](file:///d:/study-tracker/frontend/src/components/JarvisChat.tsx)
+An interactive sidebar or floating widget featuring "Jarvis".
+- Supports markdown rendering, smooth scrolling, and loading micro-animations.
+- Displays suggested actions based on student history: *"You scheduled System Design study but played games. Want me to start a study timer?"*
+
+#### [MODIFY] [page.tsx](file:///d:/study-tracker/frontend/src/app/dashboard/page.tsx)
+Refactor the main dashboard view:
+- **Focus Metrics panel**: Displays charts of productive hours, top distractions, and a daily Focus Score (0-100).
+- **Curriculum Planner**: Tracks System Design, ML, and MLOps topics with direct updates.
+- **Next Deadlines**: Shows countdowns to exams/assignments from the calendar database.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+1. **Coral Sources Linting:**
+   - Execute in WSL: `/home/rahul/.local/bin/coral source lint --file /mnt/d/study-tracker/coral/sources/activity.yaml` (and other YAMLs).
+2. **Subprocess Execution Test:**
+   - Run a test script in `backend/` to verify that Python can successfully execute Coral queries inside WSL and get clean JSON outputs.
+
+### Manual Verification
+1. **Activity Logger Test:**
+   - Run `activity_logger.py` locally on Windows. Open VS Code, then open Netflix. Verify that `backend/user_data/activity.jsonl` correctly appends the window titles and tags them.
+2. **AI Tool Calling Test:**
+   - Open Jarvis chat on the dashboard and ask: *"Did I study what I scheduled today?"*
+   - Verify that the agent runs a SQL JOIN query in the logs matching `student_calendar.events` with `student_activity.activity` and outputs a precise comparison.
+3. **UI Validation:**
+   - Spin up `npm run dev` and ensure the dashboard is fully responsive, looks premium, and shows live stats from both local logs and Supabase.

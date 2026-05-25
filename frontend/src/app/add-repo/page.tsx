@@ -7,8 +7,9 @@ import {
     parseGitHubUrl, fetchReadme, extractTopicsWithAI,
     buildCustomTrack, loadCustomTracks, saveCustomTracks,
 } from "@/lib/custom-tracks";
+import { getGithubBranches, getGithubStructure, analyzeGithubRepo, getGithubBranchSummary } from "@/lib/api";
 
-type Step = "input" | "fetching" | "extracting" | "preview" | "done" | "error";
+type Step = "input" | "branches" | "fetching" | "extracting" | "preview" | "done" | "error";
 
 const EXAMPLE_REPOS = [
     "https://github.com/jwasham/coding-interview-university",
@@ -25,6 +26,13 @@ export default function AddRepoPage() {
     const [preview, setPreview] = useState<any>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [topicCount, setTopicCount] = useState(0);
+    const [branches, setBranches] = useState<string[]>([]);
+    const [selectedBranch, setSelectedBranch] = useState("");
+    const [owner, setOwner] = useState("");
+    const [repo, setRepo] = useState("");
+    const [summary, setSummary] = useState<any>(null);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+    
     const router = useRouter();
     const supabase = createClient();
 
@@ -33,6 +41,29 @@ export default function AddRepoPage() {
             if (data.user) setUserId(data.user.id);
         });
     }, []);
+
+    useEffect(() => {
+        if (!owner || !repo || !selectedBranch) return;
+        
+        let active = true;
+        setLoadingSummary(true);
+        setSummary(null);
+        
+        getGithubBranchSummary(owner, repo, selectedBranch)
+            .then(res => {
+                if (active) {
+                    setSummary(res);
+                    setLoadingSummary(false);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setLoadingSummary(false);
+                }
+            });
+            
+        return () => { active = false; };
+    }, [selectedBranch, owner, repo]);
 
     const handleAdd = async () => {
         setError("");
@@ -43,46 +74,67 @@ export default function AddRepoPage() {
         }
 
         const { owner, repo } = parsed;
+        setOwner(owner);
+        setRepo(repo);
 
-        // Step 1: Fetch README
         setStep("fetching");
-        const readme = await fetchReadme(owner, repo);
-        if (!readme) {
-            setError(`Could not fetch README from ${owner}/${repo}. Make sure the repo is public.`);
+        try {
+            const branchList = await getGithubBranches(owner, repo);
+            if (!branchList || branchList.length === 0) {
+                setError(`Could not find any branches for ${owner}/${repo}. Check if the repository exists and is public.`);
+                setStep("error");
+                return;
+            }
+            setBranches(branchList);
+            const defaultBranch = branchList.includes("main") ? "main" : (branchList.includes("master") ? "master" : branchList[0]);
+            setSelectedBranch(defaultBranch);
+            setStep("branches");
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch repository branches.");
             setStep("error");
-            return;
         }
+    };
 
-        // Step 2: AI extraction
+    const handleAnalyzeBranch = async () => {
+        setError("");
         setStep("extracting");
-        const repoUrl = `https://github.com/${owner}/${repo}`;
-        const aiOutput = await extractTopicsWithAI(readme, repo, repoUrl);
-        if (!aiOutput || !aiOutput.sections) {
-            setError("AI could not extract topics. The README might be too short or in an unusual format.");
+        try {
+            const structure = await getGithubStructure(owner, repo, selectedBranch);
+            if (!structure || structure.length === 0) {
+                setError("The repository directory structure is empty.");
+                setStep("error");
+                return;
+            }
+
+            const aiOutput = await analyzeGithubRepo(owner, repo, selectedBranch, structure);
+            if (!aiOutput || !aiOutput.sections) {
+                setError("AI could not analyze the repository tree.");
+                setStep("error");
+                return;
+            }
+
+            let count = 0;
+            for (const section of Object.values(aiOutput.sections)) {
+                count += (section as any).topics?.length || 0;
+            }
+            setTopicCount(count);
+
+            const existing = userId ? loadCustomTracks(userId) : [];
+            const repoUrl = `https://github.com/${owner}/${repo}`;
+            const track = buildCustomTrack(owner, repo, repoUrl, aiOutput, existing.length, selectedBranch);
+            setPreview(track);
+            setStep("preview");
+        } catch (err: any) {
+            setError(err.message || "Failed to analyze repository.");
             setStep("error");
-            return;
         }
-
-        // Count total topics
-        let count = 0;
-        for (const section of Object.values(aiOutput.sections)) {
-            count += (section as any).topics?.length || 0;
-        }
-        setTopicCount(count);
-
-        // Build preview
-        const existing = userId ? loadCustomTracks(userId) : [];
-        const track = buildCustomTrack(owner, repo, repoUrl, aiOutput, existing.length);
-        setPreview(track);
-        setStep("preview");
     };
 
     const handleConfirm = () => {
         if (!userId || !preview) return;
         const existing = loadCustomTracks(userId);
-        // Check for duplicate
-        if (existing.find(t => t.repoOwner === preview.repoOwner && t.repoName === preview.repoName)) {
-            setError("This repo is already added!");
+        if (existing.find(t => t.repoOwner === preview.repoOwner && t.repoName === preview.repoName && t.branch === preview.branch)) {
+            setError("This branch for the repository is already added!");
             return;
         }
         saveCustomTracks(userId, [preview, ...existing]);
@@ -95,6 +147,12 @@ export default function AddRepoPage() {
         setError("");
         setPreview(null);
         setUrl("");
+        setBranches([]);
+        setSelectedBranch("");
+        setOwner("");
+        setRepo("");
+        setSummary(null);
+        setLoadingSummary(false);
     };
 
     return (
@@ -160,23 +218,80 @@ export default function AddRepoPage() {
                     </div>
                 )}
 
+                {/* ── BRANCH SELECT STEP ── */}
+                {step === "branches" && (
+                    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 32 }}>
+                        <h3 style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 18, color: "var(--text-primary)", marginBottom: 8 }}>
+                            Select Repository Branch
+                        </h3>
+                        <p style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 20 }}>
+                            We found {branches.length} branches in <strong>{owner}/{repo}</strong>. Select the branch you want to scan for study resources.
+                        </p>
+
+                        <label style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text-secondary)", display: "block", marginBottom: 8, letterSpacing: "0.06em" }}>
+                            SELECT BRANCH
+                        </label>
+                        <select
+                            value={selectedBranch}
+                            onChange={e => setSelectedBranch(e.target.value)}
+                            style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "monospace", outline: "none", marginBottom: 24, cursor: "pointer" }}
+                        >
+                            {branches.map(b => (
+                                <option key={b} value={b}>{b}</option>
+                            ))}
+                        </select>
+
+                        {loadingSummary && (
+                            <p style={{ fontSize: 12, fontFamily: "monospace", color: "var(--text-secondary)", marginBottom: 24, textAlign: "center" }}>
+                                ⚡ Analyzing branch contents...
+                            </p>
+                        )}
+
+                        {summary && (
+                            <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 20px", marginBottom: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                <div style={{ fontSize: 13, fontFamily: "monospace", color: "var(--text-primary)" }}>
+                                    📂 <strong>{summary.total}</strong> total files
+                                </div>
+                                <div style={{ fontSize: 13, fontFamily: "monospace", color: "#6366f1" }}>
+                                    📝 <strong>{summary.markdown}</strong> markdown docs
+                                </div>
+                                <div style={{ fontSize: 13, fontFamily: "monospace", color: "#10b981" }}>
+                                    💻 <strong>{summary.code}</strong> code files
+                                </div>
+                                <div style={{ fontSize: 13, fontFamily: "monospace", color: "#f59e0b" }}>
+                                    📄 <strong>{summary.pdf}</strong> PDF documents
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ display: "flex", gap: 12 }}>
+                            <button onClick={handleAnalyzeBranch} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#6366f1,#4f46e5)", color: "white", fontSize: 15, fontFamily: "Syne,sans-serif", fontWeight: 700, cursor: "pointer" }}>
+                                Analyze Branch Files →
+                            </button>
+                            <button onClick={handleReset} style={{ padding: "14px 20px", borderRadius: 12, border: "1px solid var(--border)", background: "transparent", color: "var(--text-secondary)", fontSize: 14, fontFamily: "monospace", cursor: "pointer" }}>
+                                Back
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── LOADING STEPS ── */}
                 {(step === "fetching" || step === "extracting") && (
                     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 48, textAlign: "center" }}>
                         <div style={{ width: 48, height: 48, borderRadius: "50%", border: "3px solid #6366f1", borderTopColor: "transparent", animation: "spin 0.8s linear infinite", margin: "0 auto 20px" }} />
 
                         <h3 style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 18, color: "var(--text-primary)", marginBottom: 8 }}>
-                            {step === "fetching" ? "Fetching README..." : "AI is extracting topics..."}
+                            {step === "fetching" ? "Fetching Branches..." : "AI is analyzing repository tree..."}
                         </h3>
                         <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
                             {step === "fetching"
-                                ? "Reading the repository README from GitHub"
-                                : "Groq AI is reading the README and extracting all topics with their resource links"}
+                                ? "Querying available branches via Coral"
+                                : "Groq AI is scanning the repository tree and building your study plan"}
                         </p>
 
                         {step === "extracting" && (
                             <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 8 }}>
-                                {["Parsing headings", "Extracting links", "Building sections"].map((s, i) => (
+                                {["Querying Trees", "Analyzing Files", "Mapping URLs"].map((s, i) => (
                                     <span key={i} style={{ fontSize: 11, fontFamily: "monospace", padding: "4px 10px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#6366f1" }}>
                                         {s}
                                     </span>
@@ -199,6 +314,12 @@ export default function AddRepoPage() {
                                 <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "monospace" }}>Review the sections below, then confirm to add to your dashboard.</p>
                             </div>
                         </div>
+
+                        {error && (
+                            <div style={{ padding: "10px 14px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, fontSize: 13, color: "#f87171", fontFamily: "monospace", marginBottom: 20 }}>
+                                ⚠ {error}
+                            </div>
+                        )}
 
                         {/* Track preview card */}
                         <div style={{ background: "var(--surface)", border: `1px solid ${preview.color}33`, borderRadius: 20, padding: 24, marginBottom: 20 }}>

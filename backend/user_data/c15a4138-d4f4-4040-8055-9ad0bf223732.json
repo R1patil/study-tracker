@@ -13,7 +13,7 @@
               "id": "sd_01",
               "title": "Scalability",
               "url": "https://algomaster.io/learn/system-design/scalability",
-              "status": "not_started",
+              "status": "in_progress",
               "notes": ""
             },
             {
@@ -807,5 +807,16 @@
     "history": []
   },
   "sessions": [],
-  "active_timer": null
+  "active_timer": null,
+  "profile": {
+    "first_name": "Rahul",
+    "last_name": "Patil",
+    "email": "rahulbpatil913@gmail.com",
+    "phone": "+916361913278",
+    "github": "https://github.com/R1patil",
+    "linkedin": "https://www.linkedin.com/in/rahul-banappagouda-patil/",
+    "website": "",
+    "resume_url": "https://drive.google.com/file/d/1-lTCqhHrJQi62G5vnXumY87Xijel56YX/view?usp=sharing",
+    "summary": "Computer Science graduate from VTU (2025), currently a Backend Engineering Intern at Raysoft.ai building production Python/FastAPI systems.\n \n\ud83c\udf1f Open Source \u2014 Mesa (Agent-Based Modeling) Actively contributing to Mesa, a Python library used by researchers worldwide for agent-based simulations. Multiple PRs merged into Mesa's main branch \u2014 including fixes to the DataCollector, UI widgets, and LLM integration layer.\n \n\ud83c\udfaf Google Summer of Code 2026 Selected as a GSoC 2026 contributor with Mesa, working on Mesa-LLM \u2014 a project that integrates Large Language Models into agent-based simulations to build more intelligent, adaptive agents.\n \n\ud83e\udd16 What I Build\n \nAI agents using LangGraph, LLMs, and FastAPI\nProduction backend systems with Python, Redis, PostgreSQL, and Google Calendar API\n \n\ud83d\udd27 Currently at Raysoft.ai Building Glamify (a multi-stylist salon booking system) and Tara (an AI-powered WhatsApp bot for a clinic), both deployed in production.\n \n\ud83d\udca1 Interests AI Agents \u00b7 Agent-Based Modeling \u00b7 Open Source \u00b7 LLMs \u00b7 Backend Systems\n \n\ud83d\udceb GitHub: github.com/R1patil"
+  }
 }

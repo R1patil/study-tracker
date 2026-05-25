@@ -1085,7 +1085,7 @@ app = FastAPI(title="Study Tracker API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", os.getenv("FRONTEND_URL", "")],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"(https://.*\.vercel\.app|chrome-extension://.*)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1141,9 +1141,37 @@ def load_user_data(user_id: str) -> dict:
         return json.load(f)
 
 
+def sync_progress_to_jsonl(user_id: str, data: dict):
+    """Flattens the nested topics database and dumps it into progress.jsonl for Coral queries."""
+    progress_file = os.path.join(DATA_DIR, "progress.jsonl")
+    lines = []
+    
+    topics = data.get("topics", {})
+    for track_key, track in topics.items():
+        for section_key, section in track.get("sections", {}).items():
+            for t in section.get("topics", []):
+                flat_entry = {
+                    "topic_id": t["id"],
+                    "title": t["title"],
+                    "track": track["title"],
+                    "section": section["title"],
+                    "status": t["status"],
+                    "notes": t.get("notes", ""),
+                    "updated_at": datetime.now().isoformat()
+                }
+                lines.append(json.dumps(flat_entry))
+                
+    with open(progress_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def save_user_data(user_id: str, data: dict):
     with open(user_file(user_id), "w") as f:
         json.dump(data, f, indent=2)
+    try:
+        sync_progress_to_jsonl(user_id, data)
+    except Exception as e:
+        print("Failed to sync progress to JSONL:", e)
 
 
 # ── Curriculum ────────────────────────────────────────────────────────────────
@@ -2237,3 +2265,412 @@ async def get_recommendations(user_id: str = Depends(get_current_user)):
         "most_studied_topics": most_studied,
         "total_study_mins": sum(s.get("duration_mins", 0) for s in sessions),
     }
+
+
+# ── Activity Summary Route ────────────────────────────────────────────────────
+
+
+@app.get("/activity/summary")
+async def get_activity_summary(user_id: str = Depends(get_current_user)):
+    activity_file = os.path.join(DATA_DIR, "activity.jsonl")
+    if not os.path.exists(activity_file):
+        return {
+            "focus_score": 100,
+            "productive_mins": 0,
+            "distracted_mins": 0,
+            "top_apps": [],
+            "top_distractions": []
+        }
+        
+    productive_seconds = 0
+    distracted_seconds = 0
+    apps = {}
+    distractions = {}
+    
+    with open(activity_file, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                entry = json.loads(line)
+                dur = entry.get("duration_seconds", 10)
+                is_prod = entry.get("is_productive", False)
+                app = entry.get("app", "Unknown")
+                title = entry.get("title", "")
+                
+                # Clean app name
+                app_clean = app.replace(".exe", "").capitalize()
+                
+                if is_prod:
+                    productive_seconds += dur
+                    apps[app_clean] = apps.get(app_clean, 0) + dur
+                else:
+                    distracted_seconds += dur
+                    # Try to extract website name from browser title
+                    if app_clean.lower() in ["chrome", "msedge", "firefox", "browser"]:
+                        site = "Web Browsing"
+                        for w in ["youtube", "netflix", "facebook", "twitter", "x.com", "reddit", "instagram"]:
+                            if w in title.lower():
+                                site = w.capitalize()
+                                break
+                        distractions[site] = distractions.get(site, 0) + dur
+                    else:
+                        distractions[app_clean] = distractions.get(app_clean, 0) + dur
+            except:
+                continue
+                
+    total_seconds = productive_seconds + distracted_seconds
+    focus_score = round((productive_seconds / total_seconds) * 100) if total_seconds > 0 else 100
+    
+    # Sort top apps/distractions
+    top_apps = sorted([{"name": k, "mins": round(v/60, 1)} for k, v in apps.items()], key=lambda x: x["mins"], reverse=True)[:5]
+    top_distractions = sorted([{"name": k, "mins": round(v/60, 1)} for k, v in distractions.items()], key=lambda x: x["mins"], reverse=True)[:5]
+    
+    return {
+        "focus_score": focus_score,
+        "productive_mins": round(productive_seconds / 60, 1),
+        "distracted_mins": round(distracted_seconds / 60, 1),
+        "top_apps": top_apps,
+        "top_distractions": top_distractions
+    }
+
+
+# ── searches logging Route ────────────────────────────────────────────────────
+
+
+class SearchLog(BaseModel):
+    query: str
+    category: Optional[str] = "General"
+
+
+@app.post("/searches/log")
+async def log_search(body: SearchLog, user_id: str = Depends(get_current_user)):
+    now = datetime.now().isoformat()
+    entry = {
+        "query": body.query,
+        "timestamp": now,
+        "category": body.category
+    }
+    search_file = os.path.join(DATA_DIR, "google_searches.jsonl")
+    with open(search_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
+    return {"success": True}
+
+
+# ── AI Jarvis Agent with Coral Tool-calling ────────────────────────────────────
+
+
+from groq import Groq
+
+def execute_coral_sql(query: str) -> str:
+    """Executes a SQL query in Coral inside WSL and returns the output in JSON format."""
+    escaped_query = query.replace('"', '\\"')
+    cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
+    try:
+        import subprocess
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", check=True)
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"SQL Error: {e.stderr or e.stdout}"
+    except Exception as e:
+        return f"Error executing Coral query: {str(e)}"
+
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list
+
+
+@app.post("/agent/chat")
+async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)):
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(500, "GROQ_API_KEY environment variable is missing in backend")
+        
+    client = Groq(api_key=api_key)
+    
+    system_prompt = (
+        "You are 'Jarvis', a highly empathetic, brilliant AI Student Operating System mentor, parent, coach, planner, and friend.\n"
+        "Your mission is to guide the student to master computer science topics (System Design, Machine Learning, MLOps) and prepare for top-tier interviews.\n\n"
+        "You have access to a Coral SQL data layer, which allows you to query the student's study databases:\n"
+        "- student_activity.activity (screen logs tracking apps & websites)\n"
+        "- student_progress.progress (their topic curriculum progress status)\n"
+        "- student_calendar.events (exams, study slots, lectures)\n"
+        "- student_searches.searches (Google search history log)\n"
+        "- student_youtube.videos (YouTube challenge statuses)\n\n"
+        "Tone and Behavior Guidelines (High EQ):\n"
+        "1. Be conversational, supportive, and emotionally intelligent. Celebrate their progress.\n"
+        "2. If you check their logs and see they are distracted (e.g. browsing Netflix during study windows, or having low focus scores), show caring tough love. Call them out gently but firmly, and immediately recommend a concrete study plan (e.g. 'You were on Netflix during your System Design block. Let's do a 20-min sprint on Consistent Hashing right now!').\n"
+        "3. Use their recent search queries to contextually recommend relevant topics. (e.g., if they searched for 'consistent hashing', you know they are working on it).\n"
+        "4. Always fetch active logs or progress via SQL if needed to answer how they are doing. Do not make up metrics.\n"
+        "5. Output your messages in clear, beautiful Markdown."
+    )
+    
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "execute_coral_sql",
+                "description": "Executes a SQL query against the student databases to gather real-time data on their study progress, calendar events, screen time activity, and Google searches. Use standard ANSI SQL syntax.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "sql_query": {
+                            "type": "string",
+                            "description": "The exact SQL query to execute."
+                        }
+                    },
+                    "required": ["sql_query"]
+                }
+            }
+        }
+    ]
+    
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in body.history:
+        messages.append(msg)
+    messages.append({"role": "user", "content": body.message})
+    
+    try:
+        for _ in range(5):
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
+            )
+            
+            response_message = response.choices[0].message
+            # Groq returns tool calls in choices[0].message
+            # We must convert/append it to messages array
+            messages.append(response_message)
+            
+            if not response_message.tool_calls:
+                return {"response": response_message.content}
+                
+            for tool_call in response_message.tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                
+                if function_name == "execute_coral_sql":
+                    sql_query = function_args.get("sql_query")
+                    sql_result = execute_coral_sql(sql_query)
+                    
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": sql_result
+                    })
+                    
+        return {"response": messages[-1].content or "I finished running queries but did not generate a final text answer."}
+            
+    except Exception as e:
+        raise HTTPException(500, f"Error calling Groq API: {str(e)}")
+
+
+# ── GitHub Repository Exploration & Analysis via Coral ────────────────────────
+
+def query_coral_json(query: str):
+    res_json = execute_coral_sql(query)
+    if res_json.startswith("SQL Error") or res_json.startswith("Error"):
+        raise HTTPException(status_code=400, detail=res_json)
+    try:
+        return json.loads(res_json)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to parse Coral output: {str(e)}. Output was: {res_json}")
+
+
+@app.get("/github/branches")
+async def get_github_branches(owner: str, repo: str, user_id: str = Depends(get_current_user)):
+    query = f"SELECT name FROM github.repo_branches WHERE owner = '{owner}' AND repo = '{repo}'"
+    data = query_coral_json(query)
+    return [row["name"] for row in data]
+
+
+@app.get("/github/structure")
+async def get_github_structure(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user)):
+    query = f"SELECT path, type, size FROM github.trees WHERE owner = '{owner}' AND repo = '{repo}' AND tree_sha = '{branch}' AND recursive = '1'"
+    return query_coral_json(query)
+
+
+class AnalyzeRequest(BaseModel):
+    owner: str
+    repo: str
+    branch: str
+    files: list
+
+
+@app.post("/github/analyze")
+async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_current_user)):
+    readme_content = ""
+    readme_path = None
+    for f in body.files:
+        if f.get("path", "").lower() in ["readme.md", "readme.markdown"]:
+            readme_path = f.get("path")
+            break
+            
+    if readme_path:
+        query = f"SELECT content_text FROM github.contents WHERE owner = '{body.owner}' AND repo = '{body.repo}' AND path = '{readme_path}' AND ref = '{body.branch}'"
+        try:
+            res = query_coral_json(query)
+            if res and len(res) > 0:
+                readme_content = res[0].get("content_text") or ""
+        except:
+            pass
+            
+    file_paths = [f.get("path") for f in body.files if f.get("type") == "blob"]
+    truncated_files = file_paths[:250]
+    
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(500, "GROQ_API_KEY environment variable is missing in backend")
+    
+    client = Groq(api_key=api_key)
+    
+    system_prompt = (
+        "You are a JSON extractor for GitHub repos. Your goal is to analyze the repository's file structure and README "
+        "to construct a step-by-step learning path / curriculum of study topics.\n\n"
+        "RULES:\n"
+        "1. ALWAYS return valid JSON — never fail, never return empty\n"
+        "2. Group study topics into sections. Each topic MUST map to a specific resource file in the repository (e.g. a markdown guide, a source file, or a documentation file) if relevant.\n"
+        "3. For each topic, construct the URL pointing directly to that file on GitHub: https://github.com/{owner}/{repo}/blob/{branch}/{file_path} (replace placeholder owner, repo, branch, file_path with actual parameters).\n"
+        "4. If a topic is general and doesn't map to a specific file, use the main repository/branch URL as fallback.\n"
+        "5. IDs must be unique strings like 't001', 't002'\n"
+        "6. Return ONLY the raw JSON object — no markdown, no backticks, no explanation.\n\n"
+        "FORMAT:\n"
+        '{"sections":{"key":{"title":"name","topics":[{"id":"t001","title":"name","url":"https://...","status":"not_started","notes":""}]}}}'
+    )
+    
+    user_prompt = (
+        f"Repo: {body.repo} (Branch: {body.branch})\n"
+        f"Owner: {body.owner}\n"
+        f"Total Files found: {len(file_paths)}\n"
+        f"Sample File list:\n{json.dumps(truncated_files, indent=2)}\n\n"
+        f"README Content:\n{readme_content[:6000] if readme_content else 'No README content available.'}\n\n"
+        f"Please extract all learning topics, folders, and key files, and organize them into a step-by-step study path. "
+        f"Generate the exact URL for each file under the branch '{body.branch}' for the repo '{body.owner}/{body.repo}'."
+    )
+    
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.1,
+            max_tokens=4000
+        )
+        text = response.choices[0].message.content or ""
+        text = text.replace("```json", "").replace("```", "").strip()
+        first = text.find("{")
+        last = text.rfind("}")
+        if first != -1 and last != -1:
+            text = text[first:last+1]
+            
+        try:
+            parsed = json.loads(text)
+            return parsed
+        except json.JSONDecodeError as de:
+            if "Extra data" in str(de):
+                try:
+                    parsed = json.loads(text[:de.pos].strip())
+                    return parsed
+                except:
+                    pass
+            raise de
+    except Exception as e:
+        raise HTTPException(500, f"Error calling AI to analyze repository: {str(e)}")
+
+
+@app.get("/github/file-content")
+async def get_github_file_content(owner: str, repo: str, path: str, ref: str, user_id: str = Depends(get_current_user)):
+    query = f"SELECT content_text FROM github.contents WHERE owner = '{owner}' AND repo = '{repo}' AND path = '{path}' AND ref = '{ref}'"
+    try:
+        data = query_coral_json(query)
+        if data and len(data) > 0:
+            return {"content": data[0].get("content_text") or ""}
+        return {"content": ""}
+    except Exception as e:
+        # Fallback to empty if file content cannot be fetched (e.g. binary file or missing)
+        return {"content": ""}
+
+
+@app.get("/github/branch-summary")
+async def get_github_branch_summary(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user)):
+    query = f"SELECT path, type FROM github.trees WHERE owner = '{owner}' AND repo = '{repo}' AND tree_sha = '{branch}' AND recursive = '1'"
+    try:
+        data = query_coral_json(query)
+        blobs = [row for row in data if row.get("type") == "blob"]
+        total = len(blobs)
+        
+        md_count = 0
+        code_count = 0
+        pdf_count = 0
+        other_count = 0
+        
+        code_extensions = [
+            ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java", 
+            ".cpp", ".c", ".h", ".cs", ".php", ".rb", ".swift", ".kt", ".sh"
+        ]
+        
+        for b in blobs:
+            path = b.get("path", "").lower()
+            if path.endswith(".md") or path.endswith(".markdown"):
+                md_count += 1
+            elif any(path.endswith(ext) for ext in code_extensions):
+                code_count += 1
+            elif path.endswith(".pdf"):
+                pdf_count += 1
+            else:
+                other_count += 1
+                
+        return {
+            "total": total,
+            "markdown": md_count,
+            "code": code_count,
+            "pdf": pdf_count,
+            "other": other_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch branch summary: {str(e)}")
+
+
+class ProfileUpdate(BaseModel):
+    first_name: Optional[str] = ""
+    last_name: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    github: Optional[str] = ""
+    linkedin: Optional[str] = ""
+    website: Optional[str] = ""
+    resume_url: Optional[str] = ""
+    summary: Optional[str] = ""
+
+
+@app.get("/profile")
+async def get_profile(user_id: str = Depends(get_current_user)):
+    data = load_user_data(user_id)
+    return data.get("profile", {
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "phone": "",
+        "github": "",
+        "linkedin": "",
+        "website": "",
+        "resume_url": "",
+        "summary": ""
+    })
+
+
+@app.post("/profile")
+async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current_user)):
+    data = load_user_data(user_id)
+    data["profile"] = body.dict()
+    save_user_data(user_id, data)
+    return {"success": True, "profile": data["profile"]}
+
+
+
