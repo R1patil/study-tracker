@@ -1102,6 +1102,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 def get_coral_binary_path() -> str:
     """Finds the absolute path of the Coral binary in production."""
     paths = [
+        "/app/bin/coral",
         "/app/coral",
         "/usr/local/bin/coral",
         "/root/.local/bin/coral",
