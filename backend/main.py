@@ -2563,7 +2563,8 @@ def execute_coral_sql(query: str) -> str:
     if sys.platform == "win32" and shutil.which("wsl"):
         cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
     else:
-        cmd = ["coral", "sql", "--format", "json", escaped_query]
+        coral_bin = get_coral_binary_path()
+        cmd = [coral_bin, "sql", "--format", "json", escaped_query]
         
     try:
         import subprocess
