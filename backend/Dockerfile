@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib
 
 # Install native Coral CLI and make it globally executable
 RUN curl -fsSL https://withcoral.com/install.sh | sh && \
-    cp /root/.local/bin/coral /app/coral && \
-    chmod 755 /app/coral
+    mkdir -p /app/bin && \
+    cp /root/.local/bin/coral /app/bin/coral && \
+    chmod 755 /app/bin/coral
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
