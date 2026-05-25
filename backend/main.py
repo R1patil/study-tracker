@@ -1243,6 +1243,26 @@ tables:
         except Exception as e:
             print(f"Error executing coral source add for {filename}: {str(e)}")
 
+    # 2. Add the built-in github source
+    github_token = os.getenv("GITHUB_TOKEN")
+    if not github_token:
+        print("WARNING: GITHUB_TOKEN environment variable is not set! Coral github queries might fail.")
+    else:
+        print("Adding Coral built-in github source with GITHUB_TOKEN...")
+        
+    env = os.environ.copy()
+    if github_token:
+        env["GITHUB_TOKEN"] = github_token
+        
+    cmd = ["coral", "source", "add", "github"]
+    try:
+        res = subprocess.run(cmd, env=env, capture_output=True, text=True, check=True)
+        print(f"Successfully added github source. Output: {res.stdout.strip()}")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to add github source: {e.stderr or e.stdout}")
+    except Exception as e:
+        print(f"Error executing coral source add github: {str(e)}")
+
 
 @app.on_event("startup")
 def startup_event():
