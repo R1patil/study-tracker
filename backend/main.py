@@ -1099,6 +1099,24 @@ DATA_DIR = "user_data"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
+def get_coral_binary_path() -> str:
+    """Finds the absolute path of the Coral binary in production."""
+    paths = [
+        "/app/coral",
+        "/usr/local/bin/coral",
+        "/root/.local/bin/coral",
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            return p
+            
+    system_path = shutil.which("coral")
+    if system_path:
+        return system_path
+        
+    return "coral"
+
+
 def setup_coral_sources_prod():
     """Generates the Coral source YAMLs and adds them to Coral CLI in production (Linux/Docker)."""
     import subprocess
@@ -1108,6 +1126,8 @@ def setup_coral_sources_prod():
         print("Running in local Windows environment with WSL. Skipping auto source registration.")
         return
         
+    coral_bin = get_coral_binary_path()
+    print(f"Resolved Coral binary path: {coral_bin} (Exists: {os.path.exists(coral_bin)})")
     print("Initializing Coral sources in production Linux/Docker container...")
     
     sources_dir = "/app/coral_sources"
@@ -1234,7 +1254,7 @@ tables:
             f.write(content)
             
         print(f"Adding Coral source spec: {filename}")
-        cmd = ["coral", "source", "add", "--file", filepath]
+        cmd = [coral_bin, "source", "add", "--file", filepath]
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, check=True)
             print(f"Successfully added source: {filename}. Output: {res.stdout.strip()}")
@@ -1254,7 +1274,7 @@ tables:
     if github_token:
         env["GITHUB_TOKEN"] = github_token
         
-    cmd = ["coral", "source", "add", "github"]
+    cmd = [coral_bin, "source", "add", "github"]
     try:
         res = subprocess.run(cmd, env=env, capture_output=True, text=True, check=True)
         print(f"Successfully added github source. Output: {res.stdout.strip()}")
