@@ -346,11 +346,38 @@ async function applyTailoredProfile() {
     const [activeTab] = await chrome.tabs.query({ active: true });
     if (!activeTab?.id) throw new Error("No active tab found");
 
+    // Try to pre-fetch resume and convert to base64 in review panel context
+    let resumeFile = null;
+    if (mergedProfile.resume_url) {
+      try {
+        const res = await fetch(mergedProfile.resume_url);
+        if (res.ok) {
+          const blob = await res.blob();
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+            reader.onerror = reject;
+          });
+          reader.readAsDataURL(blob);
+          const base64Data = await base64Promise;
+          const filename = mergedProfile.resume_url.split("/").pop().split("?")[0] || "Resume.pdf";
+          resumeFile = {
+            base64: base64Data,
+            filename: filename.endsWith(".pdf") ? filename : `${filename}.pdf`,
+            mimeType: blob.type || "application/pdf"
+          };
+          console.log("Successfully fetched and encoded resume in review panel:", filename);
+        }
+      } catch (fetchErr) {
+        console.warn("Review panel failed to pre-fetch resume:", fetchErr);
+      }
+    }
+
     // Send to content script
     const response = await new Promise((resolve, reject) => {
       chrome.tabs.sendMessage(
         activeTab.id,
-        { action: "autofill_tailored", profile: mergedProfile },
+        { action: "autofill_tailored", profile: mergedProfile, resumeFile: resumeFile },
         (res) => {
           if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
           else resolve(res);

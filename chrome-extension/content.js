@@ -4,7 +4,7 @@ console.log("Jarvis OS Autofiller v2.0 active.");
 // MESSAGE LISTENER
 // ─────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "autofill") {
+  if (request.action === "autofill" || request.action === "autofill_tailored") {
     try {
       const profile = request.profile;
       if (!profile) {
@@ -12,7 +12,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
       }
       const filledFields = autofillForm(profile);
-      if (profile.resume_url) {
+      if (request.resumeFile) {
+        injectBase64Resume(request.resumeFile);
+      } else if (profile.resume_url) {
         tryFetchAndInjectResume(profile.resume_url);
       }
       sendResponse({ success: true, filled: filledFields });
@@ -21,27 +23,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: false, error: e.message });
     }
   }
-
-  // Handle tailored profile from the HITL Review Panel
-  if (request.action === "autofill_tailored") {
-    try {
-      const profile = request.profile;
-      if (!profile) {
-        sendResponse({ success: false, error: "No tailored profile data" });
-        return true;
-      }
-      const filled = autofillForm(profile);
-      if (profile.resume_url) {
-        tryFetchAndInjectResume(profile.resume_url);
-      }
-      sendResponse({ success: true, filled });
-    } catch (e) {
-      sendResponse({ success: false, error: e.message });
-    }
-  }
-
   return true;
 });
+
 
 // ─────────────────────────────────────────────
 // UTILITY: Keyword matcher
@@ -454,3 +438,46 @@ async function tryFetchAndInjectResume(url) {
     console.warn("Could not auto-inject resume (CORS or network):", err);
   }
 }
+
+// ─────────────────────────────────────────────
+// BASE64 RESUME INJECTION (CORS Bypassed)
+// ─────────────────────────────────────────────
+function injectBase64Resume(resumeFile) {
+  try {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    let resumeInput = null;
+
+    fileInputs.forEach(input => {
+      const labelText = getLabelTextForInput(input);
+      const testStr = `${input.name} ${input.id} ${labelText}`.toLowerCase();
+      if (testStr.includes("resume") || testStr.includes("cv") || testStr.includes("application")) {
+        resumeInput = input;
+      }
+    });
+
+    if (!resumeInput && fileInputs.length > 0) {
+      resumeInput = fileInputs[0];
+    }
+
+    if (!resumeInput) return;
+
+    // Decode base64 to Blob
+    const byteCharacters = atob(resumeFile.base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: resumeFile.mimeType });
+
+    const file = new File([blob], resumeFile.filename, { type: resumeFile.mimeType });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    resumeInput.files = dataTransfer.files;
+    resumeInput.dispatchEvent(new Event("change", { bubbles: true }));
+    console.log("Base64 Resume successfully injected!");
+  } catch (err) {
+    console.warn("Base64 Resume injection failed:", err);
+  }
+}
+

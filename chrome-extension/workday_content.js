@@ -453,9 +453,6 @@ async function workdayAutofill(profile) {
 // ─────────────────────────────────────────────────────────────────
 // MESSAGE LISTENER
 // ─────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────
-// MESSAGE LISTENER
-// ─────────────────────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "autofill" || request.action === "autofill_tailored") {
     const profile = request.profile;
@@ -470,7 +467,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Start observer so new Workday steps get auto-filled too
         startWorkdayObserver(profile);
 
-        if (profile.resume_url) {
+        if (request.resumeFile) {
+          injectBase64Resume(request.resumeFile);
+        } else if (profile.resume_url) {
           tryFetchAndInjectResume(profile.resume_url);
         }
         sendResponse({ success: true, filled, note: "Workday observer active for multi-step forms" });
@@ -485,7 +484,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
 // ─────────────────────────────────────────────────────────────────
-// RESUME INJECTION
+// BASE64 RESUME INJECTION (CORS Bypassed)
+// ─────────────────────────────────────────────────────────────────
+function injectBase64Resume(resumeFile) {
+  try {
+    const allInputs = getAllShadowInputs(document);
+    let resumeInput = null;
+    allInputs.filter(i => i.type === "file").forEach(input => {
+      const label = getShadowLabelForInput(input).toLowerCase();
+      const testStr = `${input.name} ${input.id} ${label}`.toLowerCase();
+      if (testStr.includes("resume") || testStr.includes("cv")) resumeInput = input;
+    });
+    if (!resumeInput) {
+      const fileInputs = allInputs.filter(i => i.type === "file");
+      if (fileInputs.length > 0) resumeInput = fileInputs[0];
+    }
+    if (!resumeInput) return;
+
+    // Decode base64 to Blob
+    const byteCharacters = atob(resumeFile.base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: resumeFile.mimeType });
+
+    const file = new File([blob], resumeFile.filename, { type: resumeFile.mimeType });
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    resumeInput.files = dt.files;
+    resumeInput.dispatchEvent(new Event("change", { bubbles: true }));
+    console.log("Jarvis OS: Base64 Resume successfully injected into Workday.");
+  } catch (err) {
+    console.warn("Jarvis OS: Base64 Resume injection failed:", err);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RESUME INJECTION (CORS Fallback)
 // ─────────────────────────────────────────────────────────────────
 async function tryFetchAndInjectResume(url) {
   try {

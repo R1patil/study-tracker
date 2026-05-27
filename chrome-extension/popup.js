@@ -467,9 +467,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       autofillBtn.textContent = "Filling...";
       autofillBtn.disabled = true;
 
+      // Try to fetch the resume and convert to base64 in the popup (extension context)
+      let resumeFile = null;
+      if (userProfile?.resume_url) {
+        try {
+          const res = await fetch(userProfile.resume_url);
+          if (res.ok) {
+            const blob = await res.blob();
+            const reader = new FileReader();
+            const base64Promise = new Promise((resolve, reject) => {
+              reader.onloadend = () => resolve(reader.result.split(",")[1]);
+              reader.onerror = reject;
+            });
+            reader.readAsDataURL(blob);
+            const base64Data = await base64Promise;
+            const filename = userProfile.resume_url.split("/").pop().split("?")[0] || "Resume.pdf";
+            resumeFile = {
+              base64: base64Data,
+              filename: filename.endsWith(".pdf") ? filename : `${filename}.pdf`,
+              mimeType: blob.type || "application/pdf"
+            };
+            console.log("Successfully fetched and encoded resume in popup:", filename);
+          }
+        } catch (fetchErr) {
+          console.warn("Popup failed to pre-fetch resume:", fetchErr);
+        }
+      }
+
       chrome.tabs.sendMessage(activeTab.id, {
         action: "autofill",
-        profile: userProfile
+        profile: userProfile,
+        resumeFile: resumeFile
       }, (response) => {
         const lastErr = chrome.runtime.lastError;
         if (lastErr) {
