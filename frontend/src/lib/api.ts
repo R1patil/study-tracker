@@ -52,6 +52,12 @@ async function authHeaders(): Promise<HeadersInit> {
     };
 }
 
+export async function getAccessToken(): Promise<string | null> {
+    const supabase = createClient();
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+}
+
 async function apiFetch(path: string, options: RequestInit = {}) {
     const headers = await authHeaders();
     const res = await fetch(`${BASE}${path}`, {
@@ -101,4 +107,5 @@ export const completeFocusSprint = (topicId: string, topicTitle: string) =>
 export const syncYoutubeVideos = (videos: any[]) =>
     apiFetch('/youtube/sync', { method: 'POST', body: JSON.stringify({ videos }) });
 export const ingestActivity = (events: any[]) =>
-    apiFetch('/activity/ingest', { method: 'POST', body: JSON.stringify({ events }) });
+    apiFetch('/activity/ingest', { method: 'POST', body: JSON.stringify({ events }) });
+export const getCurrentActivity = () => apiFetch('/activity/current');

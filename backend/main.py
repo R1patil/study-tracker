@@ -2706,6 +2706,7 @@ async def log_search(body: SearchLog, user_id: str = Depends(get_current_user)):
 # ── Global State for Distraction Spikes ───────────────────────────────────────
 distraction_spike_active = False
 distraction_spike_details = {}
+current_activity = None
 
 
 class ActivityEvent(BaseModel):
@@ -2724,7 +2725,16 @@ class IngestRequest(BaseModel):
 
 @app.post("/activity/ingest")
 async def ingest_activity(body: IngestRequest):
-    global distraction_spike_active, distraction_spike_details
+    global distraction_spike_active, distraction_spike_details, current_activity
+    if body.events:
+        last = body.events[-1]
+        current_activity = {
+            "timestamp": last.timestamp,
+            "app": last.app,
+            "title": last.title,
+            "category": last.category,
+            "is_productive": last.category in ("productive", "passive")
+        }
     activity_file = os.path.join(DATA_DIR, "activity.jsonl")
     
     # Append new events
@@ -2780,6 +2790,17 @@ async def ingest_activity(body: IngestRequest):
         "success": True,
         "distraction_spike_active": distraction_spike_active,
         "distraction_spike_details": distraction_spike_details if distraction_spike_active else None
+    }
+
+
+@app.get("/activity/current")
+async def get_current_activity():
+    global current_activity
+    return current_activity or {
+        "app": "None",
+        "title": "No active window logged yet",
+        "category": "idle",
+        "is_productive": False
     }
 
 
@@ -3034,6 +3055,73 @@ async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)
     except Exception as e:
         raise HTTPException(500, f"Error calling Groq API: {str(e)}")
 
+
+# ── Phase 2: Proactive Behavioral Intervention ────────────────────────────────
+
+@app.get("/agent/proactive-check")
+async def proactive_check(user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    """
+    Phase 2 - Called periodically by the frontend dashboard (every 60s).
+    If a distraction spike is active, uses Jarvis LLM to generate a personalized
+    intervention with a specific code sprint topic based on the user's weakest area.
+    Returns: { trigger: bool, message: str, sprint_topic: {...} }
+    """
+    global distraction_spike_active, distraction_spike_details
+    token = authorization.split(" ")[1] if authorization else None
+
+    if not distraction_spike_active:
+        return {"trigger": False}
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return {"trigger": True, "message": "You've been distracted. Time to refocus!", "sprint_topic": None}
+
+    # Gather context: most distracted app + user's weakest topic
+    app_name = distraction_spike_details.get("most_distracting_app", "social media")
+    dist_mins = distraction_spike_details.get("distracted_mins", 5)
+
+    # Find weakest in-progress topic
+    sprint_topic = {"id": "sd_01", "title": "Consistent Hashing"}
+    try:
+        data = await load_user_data(user_id, token)
+        for track in data.get("topics", {}).values():
+            for section in track.get("sections", {}).values():
+                for t in section.get("topics", []):
+                    if t.get("status") in ["in_progress", "not_started"]:
+                        sprint_topic = {"id": t["id"], "title": t["title"]}
+                        break
+    except Exception:
+        pass
+
+    # Use Groq LLM to generate a short, personalized, high-EQ intervention
+    try:
+        groq_client = Groq(api_key=api_key)
+        prompt = (
+            f"The student has been distracted by '{app_name}' for {dist_mins} minutes. "
+            f"Their next topic to study is '{sprint_topic['title']}'. "
+            "Generate a SHORT (2-3 sentences max), empathetic but firm intervention message in the style of a caring mentor. "
+            "Quote one line from the Bhagavad Gita or Patanjali Yoga Sutras if relevant. "
+            "End with a clear call to action for a 5-minute code sprint on their topic. "
+            "Do NOT use Markdown. Plain text only. Be human, not robotic."
+        )
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are Jarvis, a high-EQ AI mentor. Keep responses short, warm, and direct."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150
+        )
+        message = response.choices[0].message.content.strip()
+    except Exception as e:
+        message = f"Hey! You've been on {app_name} for {dist_mins} mins. Let's do a 5-min sprint on {sprint_topic['title']} — small wins add up!"
+
+    return {
+        "trigger": True,
+        "message": message,
+        "sprint_topic": sprint_topic,
+        "distraction_details": distraction_spike_details
+    }
 
 # ── GitHub Repository Exploration & Analysis via Coral ────────────────────────
 
