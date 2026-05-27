@@ -2619,64 +2619,56 @@ async def get_recommendations(user_id: str = Depends(get_current_user)):
 
 @app.get("/activity/summary")
 async def get_activity_summary(user_id: str = Depends(get_current_user)):
-    activity_file = os.path.join(DATA_DIR, "activity.jsonl")
-    if not os.path.exists(activity_file):
-        return {
-            "focus_score": 100,
-            "productive_mins": 0,
-            "distracted_mins": 0,
-            "top_apps": [],
-            "top_distractions": []
-        }
-        
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json"
+    }
+    
     productive_seconds = 0
     distracted_seconds = 0
     apps = {}
     distractions = {}
     
-    with open(activity_file, "r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            try:
-                entry = json.loads(line)
-                dur = entry.get("duration_seconds", 10)
-                category = entry.get("category")
-                app = entry.get("app", "Unknown")
-                title = entry.get("title", "")
-                
-                if category is not None:
-                    is_prod = category in ("productive", "passive")
-                    is_dist = (category == "distracted")
-                else:
-                    is_prod = entry.get("is_productive", False)
-                    is_dist = not is_prod
-                
-                # Clean app name
-                app_clean = app.replace(".exe", "").capitalize()
-                
-                if is_prod:
-                    productive_seconds += dur
-                    apps[app_clean] = apps.get(app_clean, 0) + dur
-                elif is_dist:
-                    distracted_seconds += dur
-                    # Try to extract website name from browser title
-                    if app_clean.lower() in ["chrome", "msedge", "firefox", "browser"]:
-                        site = "Web Browsing"
-                        for w in ["youtube", "netflix", "facebook", "twitter", "x.com", "reddit", "instagram"]:
-                            if w in title.lower():
-                                site = w.capitalize()
-                                break
-                        distractions[site] = distractions.get(site, 0) + dur
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{SUPABASE_URL}/rest/v1/activity_logs?user_id=eq.{user_id}&select=app,title,duration_seconds,category,is_productive", headers=headers)
+            if resp.status_code == 200:
+                for entry in resp.json():
+                    dur = entry.get("duration_seconds", 10)
+                    category = entry.get("category")
+                    app = entry.get("app", "Unknown")
+                    title = entry.get("title", "")
+                    
+                    if category is not None:
+                        is_prod = category in ("productive", "passive")
+                        is_dist = (category == "distracted")
                     else:
-                        distractions[app_clean] = distractions.get(app_clean, 0) + dur
-            except:
-                continue
+                        is_prod = entry.get("is_productive", False)
+                        is_dist = not is_prod
+                    
+                    app_clean = app.replace(".exe", "").capitalize()
+                    
+                    if is_prod:
+                        productive_seconds += dur
+                        apps[app_clean] = apps.get(app_clean, 0) + dur
+                    elif is_dist:
+                        distracted_seconds += dur
+                        if app_clean.lower() in ["chrome", "msedge", "firefox", "browser"]:
+                            site = "Web Browsing"
+                            for w in ["youtube", "netflix", "facebook", "twitter", "x.com", "reddit", "instagram"]:
+                                if w in title.lower():
+                                    site = w.capitalize()
+                                    break
+                            distractions[site] = distractions.get(site, 0) + dur
+                        else:
+                            distractions[app_clean] = distractions.get(app_clean, 0) + dur
+        except Exception as e:
+            print("Error fetching activity summary from Supabase:", e)
                 
     total_seconds = productive_seconds + distracted_seconds
     focus_score = round((productive_seconds / total_seconds) * 100) if total_seconds > 0 else 100
     
-    # Sort top apps/distractions
     top_apps = sorted([{"name": k, "mins": round(v/60, 1)} for k, v in apps.items()], key=lambda x: x["mins"], reverse=True)[:5]
     top_distractions = sorted([{"name": k, "mins": round(v/60, 1)} for k, v in distractions.items()], key=lambda x: x["mins"], reverse=True)[:5]
     
@@ -2792,8 +2784,10 @@ async def ingest_activity(body: IngestRequest):
 
 
 @app.get("/activity/intervention")
-async def get_intervention(user_id: str = Depends(get_current_user)):
+async def get_intervention(user_id: str = Depends(get_current_user), authorization: str = Header(None)):
     global distraction_spike_active, distraction_spike_details
+    
+    token = authorization.split(" ")[1] if authorization else None
     
     # Query Coral wisdom table for antidote
     antidote = {
@@ -2805,7 +2799,7 @@ async def get_intervention(user_id: str = Depends(get_current_user)):
     
     try:
         query = "SELECT text, source_book, instructions, media_path, youtube_id FROM student_wisdom.wisdom ORDER BY RANDOM() LIMIT 1"
-        res_str = execute_coral_sql(query)
+        res_str = await execute_coral_sql(query, token)
         if not (res_str.startswith("SQL Error") or res_str.startswith("Error")):
             res_json = json.loads(res_str)
             if res_json and len(res_json) > 0:
@@ -2816,7 +2810,7 @@ async def get_intervention(user_id: str = Depends(get_current_user)):
     # Get current weak/in_progress topic from curriculum to suggest a sprint topic
     sprint_topic = {"id": "sd_06", "title": "Consistent Hashing"}
     try:
-        data = load_user_data(user_id)
+        data = await load_user_data(user_id, token)
         found = False
         for track in data.get("topics", {}).values():
             for section in track.get("sections", {}).values():
@@ -2846,22 +2840,23 @@ class SprintCompleteRequest(BaseModel):
 
 
 @app.post("/activity/sprint-complete")
-async def complete_sprint(body: SprintCompleteRequest, user_id: str = Depends(get_current_user)):
+async def complete_sprint(body: SprintCompleteRequest, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
     global distraction_spike_active, distraction_spike_details
     distraction_spike_active = False
     distraction_spike_details = {}
+    token = authorization.split(" ")[1] if authorization else None
     
     # Log focus recovery session to progress/sessions
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id, token)
     today = date.today().isoformat()
-    data["sessions"].append({
+    data.setdefault("sessions", []).append({
         "date": today,
         "duration_mins": 5.0,
         "topic_id": body.topic_id,
         "topic_title": f"Focus Sprint: {body.topic_title}"
     })
     _update_streak(data)
-    save_user_data(user_id, data)
+    await save_user_data(user_id, data, token)
     return {"success": True}
 
 
@@ -2871,22 +2866,31 @@ class YoutubeSyncRequest(BaseModel):
 
 @app.post("/youtube/sync")
 async def sync_youtube(body: YoutubeSyncRequest, user_id: str = Depends(get_current_user)):
-    youtube_file = os.path.join(DATA_DIR, "youtube.jsonl")
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates"
+    }
     
-    lines = []
+    payloads = []
     for video in body.videos:
-        flat_entry = {
+        payloads.append({
             "video_id": video.get("id"),
+            "user_id": user_id,
             "title": video.get("title"),
             "channel": "@R-B107",
             "topic_id": video.get("category"),
             "status": "watched" if video.get("watched") else "unwatched",
             "watched_at": video.get("addedAt", datetime.now().isoformat())
-        }
-        lines.append(json.dumps(flat_entry))
+        })
         
-    with open(youtube_file, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+    if payloads:
+        async with httpx.AsyncClient() as client:
+            try:
+                await client.post(f"{SUPABASE_URL}/rest/v1/youtube_history", json=payloads, headers=headers)
+            except Exception as e:
+                print("Error syncing youtube to Supabase:", e)
         
     return {"success": True}
 
@@ -2896,25 +2900,41 @@ async def sync_youtube(body: YoutubeSyncRequest, user_id: str = Depends(get_curr
 
 from groq import Groq
 
-def execute_coral_sql(query: str) -> str:
-    """Executes a SQL query in Coral inside WSL (on Windows) or directly (on Linux) and returns the output in JSON format."""
-    escaped_query = query.replace('"', '\\"')
+async def execute_coral_sql(query: str, token: str = None) -> str:
+    """Executes a SQL query. Routes Github queries to local Coral binary, and everything else to Supabase."""
+    if "github." in query.lower():
+        # Fallback to local Coral for Github plugin
+        escaped_query = query.replace('"', '\\"')
+        if sys.platform == "win32" and shutil.which("wsl"):
+            cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
+        else:
+            coral_bin = get_coral_binary_path()
+            cmd = [coral_bin, "sql", "--format", "json", escaped_query]
+        try:
+            import subprocess
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", check=True)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            return f"SQL Error: {e.stderr or e.stdout}"
+        except Exception as e:
+            return f"Error executing Coral query: {str(e)}"
     
-    # OS-Aware CLI commands
-    if sys.platform == "win32" and shutil.which("wsl"):
-        cmd = ["wsl", "/home/rahul/.local/bin/coral", "sql", "--format", "json", escaped_query]
-    else:
-        coral_bin = get_coral_binary_path()
-        cmd = [coral_bin, "sql", "--format", "json", escaped_query]
-        
+    # Otherwise, execute against Supabase
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {token or SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {"sql_query": query}
     try:
-        import subprocess
-        result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", check=True)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"SQL Error: {e.stderr or e.stdout}"
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{SUPABASE_URL}/rest/v1/rpc/execute_sql", json=payload, headers=headers)
+            if resp.status_code == 200:
+                return json.dumps(resp.json())
+            else:
+                return f"SQL Error: {resp.status_code} - {resp.text}"
     except Exception as e:
-        return f"Error executing Coral query: {str(e)}"
+        return f"Error executing Supabase query: {str(e)}"
 
 
 class ChatRequest(BaseModel):
@@ -2923,7 +2943,8 @@ class ChatRequest(BaseModel):
 
 
 @app.post("/agent/chat")
-async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)):
+async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(500, "GROQ_API_KEY environment variable is missing in backend")
@@ -2999,7 +3020,7 @@ async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)
                 
                 if function_name == "execute_coral_sql":
                     sql_query = function_args.get("sql_query")
-                    sql_result = execute_coral_sql(sql_query)
+                    sql_result = await execute_coral_sql(sql_query, token)
                     
                     messages.append({
                         "tool_call_id": tool_call.id,
@@ -3016,8 +3037,8 @@ async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)
 
 # ── GitHub Repository Exploration & Analysis via Coral ────────────────────────
 
-def query_coral_json(query: str):
-    res_json = execute_coral_sql(query)
+async def query_coral_json(query: str, token: str = None):
+    res_json = await execute_coral_sql(query, token)
     if res_json.startswith("SQL Error") or res_json.startswith("Error"):
         raise HTTPException(status_code=400, detail=res_json)
     try:
@@ -3027,16 +3048,18 @@ def query_coral_json(query: str):
 
 
 @app.get("/github/branches")
-async def get_github_branches(owner: str, repo: str, user_id: str = Depends(get_current_user)):
+async def get_github_branches(owner: str, repo: str, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     query = f"SELECT name FROM github.repo_branches WHERE owner = '{owner}' AND repo = '{repo}'"
-    data = query_coral_json(query)
+    data = await query_coral_json(query, token)
     return [row["name"] for row in data]
 
 
 @app.get("/github/structure")
-async def get_github_structure(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user)):
+async def get_github_structure(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     query = f"SELECT path, type, size FROM github.trees WHERE owner = '{owner}' AND repo = '{repo}' AND tree_sha = '{branch}' AND recursive = '1'"
-    return query_coral_json(query)
+    return await query_coral_json(query, token)
 
 
 class AnalyzeRequest(BaseModel):
@@ -3047,7 +3070,8 @@ class AnalyzeRequest(BaseModel):
 
 
 @app.post("/github/analyze")
-async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_current_user)):
+async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     readme_content = ""
     readme_path = None
     for f in body.files:
@@ -3058,7 +3082,7 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
     if readme_path:
         query = f"SELECT content_text FROM github.contents WHERE owner = '{body.owner}' AND repo = '{body.repo}' AND path = '{readme_path}' AND ref = '{body.branch}'"
         try:
-            res = query_coral_json(query)
+            res = await query_coral_json(query, token)
             if res and len(res) > 0:
                 readme_content = res[0].get("content_text") or ""
         except:
@@ -3130,10 +3154,11 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
 
 
 @app.get("/github/file-content")
-async def get_github_file_content(owner: str, repo: str, path: str, ref: str, user_id: str = Depends(get_current_user)):
+async def get_github_file_content(owner: str, repo: str, path: str, ref: str, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     query = f"SELECT content_text FROM github.contents WHERE owner = '{owner}' AND repo = '{repo}' AND path = '{path}' AND ref = '{ref}'"
     try:
-        data = query_coral_json(query)
+        data = await query_coral_json(query, token)
         if data and len(data) > 0:
             return {"content": data[0].get("content_text") or ""}
         return {"content": ""}
@@ -3143,10 +3168,11 @@ async def get_github_file_content(owner: str, repo: str, path: str, ref: str, us
 
 
 @app.get("/github/branch-summary")
-async def get_github_branch_summary(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user)):
+async def get_github_branch_summary(owner: str, repo: str, branch: str, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
     query = f"SELECT path, type FROM github.trees WHERE owner = '{owner}' AND repo = '{repo}' AND tree_sha = '{branch}' AND recursive = '1'"
     try:
-        data = query_coral_json(query)
+        data = await query_coral_json(query, token)
         blobs = [row for row in data if row.get("type") == "blob"]
         total = len(blobs)
         
@@ -3338,31 +3364,33 @@ REQUIRED_PROFILE_FIELDS = [
 
 
 @app.get("/profile")
-async def get_profile(user_id: str = Depends(get_current_user)):
-    data = load_user_data(user_id)
+async def get_profile(user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
+    data = await load_user_data(user_id, token)
     profile = data.get("profile", {})
     # Calculate completeness
     filled = sum(1 for f in REQUIRED_PROFILE_FIELDS if profile.get(f))
-    profile["_completeness_pct"] = round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100)
+    profile["_completeness_pct"] = round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100) if len(REQUIRED_PROFILE_FIELDS) > 0 else 0
     profile["_missing_fields"] = [f for f in REQUIRED_PROFILE_FIELDS if not profile.get(f)]
     return profile
 
 
 @app.post("/profile")
-async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current_user)):
-    data = load_user_data(user_id)
+async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current_user), authorization: str = Header(None)):
+    token = authorization.split(" ")[1] if authorization else None
+    data = await load_user_data(user_id, token)
     # Merge — keep existing values if new value is blank
     existing = data.get("profile", {})
     incoming = {k: v for k, v in body.dict().items() if v}
     existing.update(incoming)
     data["profile"] = existing
-    save_user_data(user_id, data)
+    await save_user_data(user_id, data, token)
     # Recalculate completeness
     filled = sum(1 for f in REQUIRED_PROFILE_FIELDS if existing.get(f))
     return {
         "success": True,
         "profile": existing,
-        "completeness_pct": round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100),
+        "completeness_pct": round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100) if len(REQUIRED_PROFILE_FIELDS) > 0 else 0,
         "missing_fields": [f for f in REQUIRED_PROFILE_FIELDS if not existing.get(f)]
     }
 
