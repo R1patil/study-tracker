@@ -1,0 +1,27 @@
+name: student_wisdom
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: wisdom
+    description: Trusted books, verses, videos, and instructions related to Yoga, Mindfulness, and Spiritual focus antidotes
+    source:
+      location: file:///mnt/d/study-tracker/backend/user_data/
+      glob: "wisdom.jsonl"
+    columns:
+      - name: id
+        type: Utf8
+      - name: text
+        type: Utf8
+      - name: source_book
+        type: Utf8
+      - name: category
+        type: Utf8
+      - name: exercise_type
+        type: Utf8
+      - name: instructions
+        type: Utf8
+      - name: media_path
+        type: Utf8
+      - name: youtube_id
+        type: Utf8

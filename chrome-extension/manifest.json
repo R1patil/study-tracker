@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Antigravity Job Autofiller",
-  "version": "1.0.5",
-  "description": "Autofill job applications from your Study Tracker profile",
+  "name": "Jarvis OS Autofiller",
+  "version": "3.0.0",
+  "description": "Jarvis OS: Autofill 50+ fields on Workday, Lever, Greenhouse, Naukri, LinkedIn, Indeed and all ATS platforms",
   "permissions": [
     "activeTab",
     "storage",
     "scripting",
     "tabs",
-    "cookies"
+    "cookies",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -21,14 +22,90 @@
       "128": "icons/icon128.png"
     }
   },
+  "side_panel": {
+    "default_path": "review_panel.html"
+  },
   "content_scripts": [
     {
+      "comment": "Workday — shadow DOM handler",
       "matches": [
-        "http://*/*",
-        "https://*/*"
+        "https://*.myworkdayjobs.com/*",
+        "https://wd1.myworkdayjobs.com/*",
+        "https://wd3.myworkdayjobs.com/*",
+        "https://wd5.myworkdayjobs.com/*"
+      ],
+      "js": ["workday_content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "comment": "iCIMS — iframe + jQuery handler",
+      "matches": [
+        "https://*.icims.com/*",
+        "https://careers.icims.com/*"
+      ],
+      "js": ["icims_content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "comment": "LinkedIn — Easy Apply multi-step modal handler",
+      "matches": [
+        "https://www.linkedin.com/*",
+        "https://linkedin.com/*"
+      ],
+      "js": ["linkedin_content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "comment": "Naukri — Quick Apply modal + chatbot questionnaire handler",
+      "matches": [
+        "https://www.naukri.com/*",
+        "https://naukri.com/*"
+      ],
+      "js": ["naukri_content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "comment": "Indeed — Easy Apply sidebar widget handler",
+      "matches": [
+        "https://www.indeed.com/*",
+        "https://in.indeed.com/*",
+        "https://indeed.com/*"
+      ],
+      "js": ["indeed_content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "comment": "Universal — Lever, Greenhouse, Ashby, SmartRecruiters, BambooHR, Instahyre, Cutshort, etc.",
+      "matches": [
+        "https://jobs.lever.co/*",
+        "https://boards.greenhouse.io/*",
+        "https://wellfound.com/*",
+        "https://jobs.ashby.com/*",
+        "https://jobs.smartrecruiters.com/*",
+        "https://*.bamboohr.com/*",
+        "https://www.instahyre.com/*",
+        "https://cutshort.io/*",
+        "https://www.foundit.in/*",
+        "https://www.shine.com/*",
+        "https://ats.rippling.com/*",
+        "https://*.successfactors.com/*",
+        "https://*.taleo.net/*",
+        "https://apply.workable.com/*",
+        "https://jobs.hackernoon.com/*",
+        "https://www.hirist.tech/*",
+        "https://www.hackerearth.com/*",
+        "https://wellfound.com/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*"
       ],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "icons": {

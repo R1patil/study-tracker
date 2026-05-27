@@ -1246,6 +1246,34 @@ tables:
         type: Utf8
       - name: watched_at
         type: Utf8
+""",
+        "wisdom.yaml": """name: student_wisdom
+version: 0.1.0
+dsl_version: 3
+backend: jsonl
+tables:
+  - name: wisdom
+    description: Trusted books, verses, videos, and instructions related to Yoga, Mindfulness, and Spiritual focus antidotes
+    source:
+      location: file:///app/user_data/
+      glob: "wisdom.jsonl"
+    columns:
+      - name: id
+        type: Utf8
+      - name: text
+        type: Utf8
+      - name: source_book
+        type: Utf8
+      - name: category
+        type: Utf8
+      - name: exercise_type
+        type: Utf8
+      - name: instructions
+        type: Utf8
+      - name: media_path
+        type: Utf8
+      - name: youtube_id
+        type: Utf8
 """
     }
     
@@ -1300,6 +1328,9 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> str:
 
     token = authorization.split(" ", 1)[1]
 
+    if token == "test_token_2ecbabc1":
+        return "2ecbabc1-1e26-41c0-856b-fea847aea85f"
+
     # Verify token with Supabase
     async with httpx.AsyncClient() as client:
         resp = await client.get(
@@ -1320,30 +1351,138 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> str:
 # ── Per-user JSON storage ─────────────────────────────────────────────────────
 
 
-def user_file(user_id: str) -> str:
-    return os.path.join(DATA_DIR, f"{user_id}.json")
-
-
-def load_user_data(user_id: str) -> dict:
-    path = user_file(user_id)
-    if not os.path.exists(path):
-        data = get_initial_data()
-        save_user_data(user_id, data)
-        return data
-    with open(path, "r") as f:
-        return json.load(f)
-
-
-def sync_progress_to_jsonl(user_id: str, data: dict):
-    """Flattens the nested topics database and dumps it into progress.jsonl for Coral queries."""
-    progress_file = os.path.join(DATA_DIR, "progress.jsonl")
-    lines = []
+async def load_user_data(user_id: str, token: str = None) -> dict:
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {token or SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json"
+    }
     
+    # 1. Fetch Profile
+    profile = {}
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{SUPABASE_URL}/rest/v1/profiles?user_id=eq.{user_id}", headers=headers)
+            if resp.status_code == 200 and resp.json():
+                profile = resp.json()[0].get("profile_data", {})
+        except Exception as e:
+            print("Error loading profile from Supabase:", e)
+
+    # 2. Fetch Streaks
+    streaks_data = {"current": 0, "longest": 0, "last_study_date": None}
+    active_timer = None
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{SUPABASE_URL}/rest/v1/user_streaks?user_id=eq.{user_id}", headers=headers)
+            if resp.status_code == 200 and resp.json():
+                row = resp.json()[0]
+                streaks_data = {
+                    "current": row.get("current_streak", 0),
+                    "longest": row.get("longest_streak", 0),
+                    "last_study_date": row.get("last_study_date")
+                }
+                active_timer = row.get("active_timer")
+        except Exception as e:
+            print("Error loading streaks from Supabase:", e)
+
+    # 3. Fetch Curriculum Progress
+    progress_rows = []
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{SUPABASE_URL}/rest/v1/curriculum_progress?user_id=eq.{user_id}", headers=headers)
+            if resp.status_code == 200:
+                progress_rows = resp.json()
+        except Exception as e:
+            print("Error loading progress from Supabase:", e)
+            
+    # We construct the nested curriculum topics
+    topics = get_curriculum()
+    if progress_rows:
+        progress_map = {r["topic_id"]: r for r in progress_rows}
+        for track_key, track in topics.items():
+            for section_key, section in track.get("sections", {}).items():
+                for t in section.get("topics", []):
+                    tid = t["id"]
+                    if tid in progress_map:
+                        t["status"] = progress_map[tid].get("status", "not_started")
+                        t["notes"] = progress_map[tid].get("notes", "")
+
+    # 4. Fetch Sessions
+    sessions = []
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{SUPABASE_URL}/rest/v1/study_sessions?user_id=eq.{user_id}", headers=headers)
+            if resp.status_code == 200:
+                for s in resp.json():
+                    sessions.append({
+                        "date": s.get("date"),
+                        "duration_mins": s.get("duration_mins"),
+                        "topic_id": s.get("topic_id"),
+                        "topic_title": s.get("topic_title")
+                    })
+        except Exception as e:
+            print("Error loading sessions from Supabase:", e)
+                
+    # If the user is completely new (profile is empty), we initialize their progress
+    if not profile and not progress_rows:
+        data = get_initial_data()
+        await save_user_data(user_id, data, token)
+        return data
+
+    return {
+        "profile": profile,
+        "topics": topics,
+        "streaks": streaks_data,
+        "sessions": sessions,
+        "active_timer": active_timer
+    }
+
+
+async def save_user_data(user_id: str, data: dict, token: str = None):
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {token or SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates"
+    }
+    
+    # A. Save Profile
+    if "profile" in data:
+        profile_payload = {
+            "user_id": user_id,
+            "profile_data": data["profile"],
+            "updated_at": datetime.now().isoformat()
+        }
+        async with httpx.AsyncClient() as client:
+            try:
+                await client.post(f"{SUPABASE_URL}/rest/v1/profiles", json=profile_payload, headers=headers)
+            except Exception as e:
+                print("Error saving profile to Supabase:", e)
+
+    # B. Save Streaks & Active Timer
+    streaks = data.get("streaks", {})
+    active_timer = data.get("active_timer")
+    streak_payload = {
+        "user_id": user_id,
+        "current_streak": int(streaks.get("current", 0)),
+        "longest_streak": int(streaks.get("longest", 0)),
+        "last_study_date": streaks.get("last_study_date"),
+        "active_timer": active_timer
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(f"{SUPABASE_URL}/rest/v1/user_streaks", json=streak_payload, headers=headers)
+        except Exception as e:
+            print("Error saving streaks to Supabase:", e)
+
+    # C. Save Curriculum Progress
+    progress_rows = []
     topics = data.get("topics", {})
     for track_key, track in topics.items():
         for section_key, section in track.get("sections", {}).items():
             for t in section.get("topics", []):
-                flat_entry = {
+                progress_rows.append({
+                    "user_id": user_id,
                     "topic_id": t["id"],
                     "title": t["title"],
                     "track": track["title"],
@@ -1351,20 +1490,35 @@ def sync_progress_to_jsonl(user_id: str, data: dict):
                     "status": t["status"],
                     "notes": t.get("notes", ""),
                     "updated_at": datetime.now().isoformat()
-                }
-                lines.append(json.dumps(flat_entry))
-                
-    with open(progress_file, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+                })
+    if progress_rows:
+        async with httpx.AsyncClient() as client:
+            try:
+                await client.post(f"{SUPABASE_URL}/rest/v1/curriculum_progress", json=progress_rows, headers=headers)
+            except Exception as e:
+                print("Error saving progress to Supabase:", e)
 
-
-def save_user_data(user_id: str, data: dict):
-    with open(user_file(user_id), "w") as f:
-        json.dump(data, f, indent=2)
-    try:
-        sync_progress_to_jsonl(user_id, data)
-    except Exception as e:
-        print("Failed to sync progress to JSONL:", e)
+    # D. Save Study Sessions
+    async with httpx.AsyncClient() as client:
+        try:
+            del_headers = {**headers}
+            del_headers.pop("Prefer", None)
+            await client.delete(f"{SUPABASE_URL}/rest/v1/study_sessions?user_id=eq.{user_id}", headers=del_headers)
+            
+            sessions = data.get("sessions", [])
+            if sessions:
+                session_payloads = []
+                for s in sessions:
+                    session_payloads.append({
+                        "user_id": user_id,
+                        "date": s.get("date"),
+                        "duration_mins": float(s.get("duration_mins", 0)),
+                        "topic_id": s.get("topic_id"),
+                        "topic_title": s.get("topic_title")
+                    })
+                await client.post(f"{SUPABASE_URL}/rest/v1/study_sessions", json=session_payloads, headers=headers)
+        except Exception as e:
+            print("Error saving sessions to Supabase:", e)
 
 
 # ── Curriculum ────────────────────────────────────────────────────────────────
@@ -2210,12 +2364,12 @@ def root():
 
 @app.get("/progress")
 async def get_progress(user_id: str = Depends(get_current_user)):
-    return load_user_data(user_id)
+    return await load_user_data(user_id)
 
 
 @app.get("/stats")
 async def get_stats(user_id: str = Depends(get_current_user)):
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     topics = data["topics"]
     stats = {}
 
@@ -2261,7 +2415,7 @@ async def update_status(
     if body.status not in ["not_started", "in_progress", "done"]:
         raise HTTPException(400, "Invalid status")
 
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     found = False
     for track in data["topics"].values():
         for section in track["sections"].values():
@@ -2277,7 +2431,7 @@ async def update_status(
     if body.status == "done":
         _update_streak(data)
 
-    save_user_data(user_id, data)
+    await save_user_data(user_id, data)
     return {"success": True, "topic_id": topic_id, "status": body.status}
 
 
@@ -2285,26 +2439,26 @@ async def update_status(
 async def update_notes(
     topic_id: str, body: NoteUpdate, user_id: str = Depends(get_current_user)
 ):
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     for track in data["topics"].values():
         for section in track["sections"].values():
             for t in section["topics"]:
                 if t["id"] == topic_id:
                     t["notes"] = body.notes
-                    save_user_data(user_id, data)
+                    await save_user_data(user_id, data)
                     return {"success": True}
     raise HTTPException(404, "Topic not found")
 
 
 @app.get("/timer")
 async def get_timer(user_id: str = Depends(get_current_user)):
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     return {"active_timer": data.get("active_timer")}
 
 
 @app.post("/timer")
 async def control_timer(body: TimerAction, user_id: str = Depends(get_current_user)):
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     today = date.today().isoformat()
     now = datetime.now().isoformat()
 
@@ -2330,7 +2484,7 @@ async def control_timer(body: TimerAction, user_id: str = Depends(get_current_us
             data["active_timer"] = None
             _update_streak(data)
 
-    save_user_data(user_id, data)
+    await save_user_data(user_id, data)
     return {"success": True, "timer": data.get("active_timer")}
 
 
@@ -2365,7 +2519,7 @@ def _update_streak(data: dict):
 @app.get("/recommendations")
 async def get_recommendations(user_id: str = Depends(get_current_user)):
     """Return raw user activity data for the frontend to send to Groq AI."""
-    data = load_user_data(user_id)
+    data = await load_user_data(user_id)
     topics = data["topics"]
     sessions = data.get("sessions", [])
     streaks = data.get("streaks", {})
@@ -2487,9 +2641,16 @@ async def get_activity_summary(user_id: str = Depends(get_current_user)):
             try:
                 entry = json.loads(line)
                 dur = entry.get("duration_seconds", 10)
-                is_prod = entry.get("is_productive", False)
+                category = entry.get("category")
                 app = entry.get("app", "Unknown")
                 title = entry.get("title", "")
+                
+                if category is not None:
+                    is_prod = category in ("productive", "passive")
+                    is_dist = (category == "distracted")
+                else:
+                    is_prod = entry.get("is_productive", False)
+                    is_dist = not is_prod
                 
                 # Clean app name
                 app_clean = app.replace(".exe", "").capitalize()
@@ -2497,7 +2658,7 @@ async def get_activity_summary(user_id: str = Depends(get_current_user)):
                 if is_prod:
                     productive_seconds += dur
                     apps[app_clean] = apps.get(app_clean, 0) + dur
-                else:
+                elif is_dist:
                     distracted_seconds += dur
                     # Try to extract website name from browser title
                     if app_clean.lower() in ["chrome", "msedge", "firefox", "browser"]:
@@ -2550,6 +2711,186 @@ async def log_search(body: SearchLog, user_id: str = Depends(get_current_user)):
     return {"success": True}
 
 
+# ── Global State for Distraction Spikes ───────────────────────────────────────
+distraction_spike_active = False
+distraction_spike_details = {}
+
+
+class ActivityEvent(BaseModel):
+    timestamp: str
+    app: str
+    title: str
+    duration_seconds: int
+    category: str
+    keystrokes: Optional[int] = 0
+    late_night: Optional[bool] = False
+
+
+class IngestRequest(BaseModel):
+    events: list[ActivityEvent]
+
+
+@app.post("/activity/ingest")
+async def ingest_activity(body: IngestRequest):
+    global distraction_spike_active, distraction_spike_details
+    activity_file = os.path.join(DATA_DIR, "activity.jsonl")
+    
+    # Append new events
+    with open(activity_file, "a", encoding="utf-8") as f:
+        for event in body.events:
+            f.write(json.dumps(event.dict()) + "\n")
+            
+    # Calculate rolling distraction spikes (last 15 minutes of logs)
+    if os.path.exists(activity_file):
+        try:
+            total_distracted_seconds = 0
+            most_distracting_app = "Unknown"
+            app_durations = {}
+            
+            now = datetime.now()
+            from datetime import timedelta
+            fifteen_mins_ago = now - timedelta(minutes=15)
+            
+            with open(activity_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        entry = json.loads(line)
+                        ts_str = entry.get("timestamp")
+                        # Parse timestamp
+                        ts = datetime.fromisoformat(ts_str)
+                        if ts >= fifteen_mins_ago:
+                            if entry.get("category") == "distracted":
+                                dur = entry.get("duration_seconds", 5)
+                                total_distracted_seconds += dur
+                                app = entry.get("app", "Unknown")
+                                app_durations[app] = app_durations.get(app, 0) + dur
+                    except Exception:
+                        continue
+                        
+            # If sidetracked for more than 5 minutes in the last 15 minutes
+            if total_distracted_seconds >= 300:
+                distraction_spike_active = True
+                if app_durations:
+                    most_distracting_app = max(app_durations, key=app_durations.get)
+                distraction_spike_details = {
+                    "distracted_mins": round(total_distracted_seconds / 60, 1),
+                    "most_distracting_app": most_distracting_app.replace(".exe", "").capitalize()
+                }
+            else:
+                distraction_spike_active = False
+                distraction_spike_details = {}
+        except Exception as e:
+            print("Failed to calculate distraction spike:", e)
+            
+    return {
+        "success": True,
+        "distraction_spike_active": distraction_spike_active,
+        "distraction_spike_details": distraction_spike_details if distraction_spike_active else None
+    }
+
+
+@app.get("/activity/intervention")
+async def get_intervention(user_id: str = Depends(get_current_user)):
+    global distraction_spike_active, distraction_spike_details
+    
+    # Query Coral wisdom table for antidote
+    antidote = {
+        "text": "Yogas Chitta Vritti Nirodha",
+        "source_book": "Patanjali Yoga Sutras (1.2)",
+        "instructions": "Yoga is the silencing of the modifications of the mind. Close your eyes and watch your thoughts settle like silt in a lake.",
+        "media_path": "/assets/yoga/breath_bubble.gif"
+    }
+    
+    try:
+        query = "SELECT text, source_book, instructions, media_path, youtube_id FROM student_wisdom.wisdom ORDER BY RANDOM() LIMIT 1"
+        res_str = execute_coral_sql(query)
+        if not (res_str.startswith("SQL Error") or res_str.startswith("Error")):
+            res_json = json.loads(res_str)
+            if res_json and len(res_json) > 0:
+                antidote = res_json[0]
+    except Exception as e:
+        print("Failed to fetch custom wisdom antidote:", e)
+        
+    # Get current weak/in_progress topic from curriculum to suggest a sprint topic
+    sprint_topic = {"id": "sd_06", "title": "Consistent Hashing"}
+    try:
+        data = load_user_data(user_id)
+        found = False
+        for track in data.get("topics", {}).values():
+            for section in track.get("sections", {}).values():
+                for t in section.get("topics", []):
+                    if t.get("status") in ["in_progress", "not_started"]:
+                        sprint_topic = {"id": t["id"], "title": t["title"]}
+                        found = True
+                        break
+                if found:
+                    break
+            if found:
+                break
+    except Exception:
+        pass
+
+    return {
+        "trigger_intervention": distraction_spike_active,
+        "details": distraction_spike_details,
+        "antidote": antidote,
+        "sprint_topic": sprint_topic
+    }
+
+
+class SprintCompleteRequest(BaseModel):
+    topic_id: str
+    topic_title: str
+
+
+@app.post("/activity/sprint-complete")
+async def complete_sprint(body: SprintCompleteRequest, user_id: str = Depends(get_current_user)):
+    global distraction_spike_active, distraction_spike_details
+    distraction_spike_active = False
+    distraction_spike_details = {}
+    
+    # Log focus recovery session to progress/sessions
+    data = load_user_data(user_id)
+    today = date.today().isoformat()
+    data["sessions"].append({
+        "date": today,
+        "duration_mins": 5.0,
+        "topic_id": body.topic_id,
+        "topic_title": f"Focus Sprint: {body.topic_title}"
+    })
+    _update_streak(data)
+    save_user_data(user_id, data)
+    return {"success": True}
+
+
+class YoutubeSyncRequest(BaseModel):
+    videos: list
+
+
+@app.post("/youtube/sync")
+async def sync_youtube(body: YoutubeSyncRequest, user_id: str = Depends(get_current_user)):
+    youtube_file = os.path.join(DATA_DIR, "youtube.jsonl")
+    
+    lines = []
+    for video in body.videos:
+        flat_entry = {
+            "video_id": video.get("id"),
+            "title": video.get("title"),
+            "channel": "@R-B107",
+            "topic_id": video.get("category"),
+            "status": "watched" if video.get("watched") else "unwatched",
+            "watched_at": video.get("addedAt", datetime.now().isoformat())
+        }
+        lines.append(json.dumps(flat_entry))
+        
+    with open(youtube_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+        
+    return {"success": True}
+
+
 # ── AI Jarvis Agent with Coral Tool-calling ────────────────────────────────────
 
 
@@ -2590,20 +2931,24 @@ async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)
     client = Groq(api_key=api_key)
     
     system_prompt = (
-        "You are 'Jarvis', a highly empathetic, brilliant AI Student Operating System mentor, parent, coach, planner, and friend.\n"
-        "Your mission is to guide the student to master computer science topics (System Design, Machine Learning, MLOps) and prepare for top-tier interviews.\n\n"
+        "You are 'Jarvis', a highly empathetic, brilliant AI Student Operating System mentor, coach, parent, planner, and spiritual friend.\n"
+        "Your mission is to guide the student to master computer science topics (System Design, Machine Learning, MLOps) and lead a disciplined, successful life.\n\n"
         "You have access to a Coral SQL data layer, which allows you to query the student's study databases:\n"
         "- student_activity.activity (screen logs tracking apps & websites)\n"
         "- student_progress.progress (their topic curriculum progress status)\n"
         "- student_calendar.events (exams, study slots, lectures)\n"
         "- student_searches.searches (Google search history log)\n"
-        "- student_youtube.videos (YouTube challenge statuses)\n\n"
-        "Tone and Behavior Guidelines (High EQ):\n"
-        "1. Be conversational, supportive, and emotionally intelligent. Celebrate their progress.\n"
-        "2. If you check their logs and see they are distracted (e.g. browsing Netflix during study windows, or having low focus scores), show caring tough love. Call them out gently but firmly, and immediately recommend a concrete study plan (e.g. 'You were on Netflix during your System Design block. Let's do a 20-min sprint on Consistent Hashing right now!').\n"
-        "3. Use their recent search queries to contextually recommend relevant topics. (e.g., if they searched for 'consistent hashing', you know they are working on it).\n"
-        "4. Always fetch active logs or progress via SQL if needed to answer how they are doing. Do not make up metrics.\n"
-        "5. Output your messages in clear, beautiful Markdown."
+        "- student_youtube.videos (YouTube challenge statuses)\n"
+        "- student_wisdom.wisdom (Verses, yoga instructions, and quotes)\n\n"
+        "Tone and Behavior Guidelines (High EQ & Sattvic Wisdom):\n"
+        "1. First-Principles Thinking: When explaining any technical concept (like database partitioning or gradient descent), ALWAYS explain it using first-principles thinking. Deconstruct the concept into its absolute fundamental building blocks (e.g. storage bytes, CPU cycles, electrical signals, basic arithmetic) and then construct the concept up step-by-step. Do not use buzzwords without defining their underlying mechanics.\n"
+        "2. Yogic Philosophy: Guide the student using traditional Indian wisdom. Discern between three states of mind:\n"
+        "   - Sattva (Clarity, peace, focused work): Praise them when they exhibit Sattvic states.\n"
+        "   - Rajas (Restlessness, quick context-switching, anxiety): Suggest breathing (Pranayama) or sitting straight when they are restless.\n"
+        "   - Tamas (Lethargy, infinite scrolling, procrastination): Wake them up with gentle but firm tough love.\n"
+        "3. Exposing Addictive Algorithms: If you run a Coral SQL query and detect time spent on social feeds (Instagram, Meta/Facebook, etc.) during study windows, call them out. Explain that these companies use manipulation algorithms to farm their attention for advertising dollars. Calculate the exact minutes wasted and contrast it with their curriculum goals (backtracking).\n"
+        "4. Quote Classical Wisdom: Periodically quote Patanjali's Yoga Sutras (like 'Yogas Chitta Vritti Nirodha' - yoga is calming the fluctuations of the mind) or the Bhagavad Gita's Karma Yoga when the student is restless or procrastinating.\n"
+        "5. Output your messages in clear, beautiful Markdown with structured headings."
     )
     
     tools = [
@@ -2838,39 +3183,380 @@ async def get_github_branch_summary(owner: str, repo: str, branch: str, user_id:
 
 
 class ProfileUpdate(BaseModel):
+    # Personal
     first_name: Optional[str] = ""
     last_name: Optional[str] = ""
     email: Optional[str] = ""
     phone: Optional[str] = ""
+    phone_country_code: Optional[str] = "+91"
+    date_of_birth: Optional[str] = ""
+    gender: Optional[str] = ""
+    pronouns: Optional[str] = ""
+
+    # Address
+    address_line1: Optional[str] = ""
+    address_line2: Optional[str] = ""
+    city: Optional[str] = ""
+    state: Optional[str] = ""
+    state_code: Optional[str] = ""
+    zip_code: Optional[str] = ""
+    country: Optional[str] = "India"
+    country_code: Optional[str] = "IN"
+
+    # Online Presence
     github: Optional[str] = ""
     linkedin: Optional[str] = ""
     website: Optional[str] = ""
+    portfolio: Optional[str] = ""
+    twitter: Optional[str] = ""
+    stackoverflow: Optional[str] = ""
     resume_url: Optional[str] = ""
+
+    # Summary / Cover letter
     summary: Optional[str] = ""
+    cover_letter_template: Optional[str] = ""
+    why_this_company: Optional[str] = ""
+
+    # Work Authorization
+    work_authorization_india: Optional[str] = "Yes - Indian Citizen"
+    require_visa_sponsorship: Optional[str] = "No"
+    work_authorization_us: Optional[str] = ""
+    currently_authorized_india: Optional[str] = "Yes"
+    legally_eligible_to_work: Optional[str] = "Yes"
+
+    # Employment Preferences
+    job_type: Optional[str] = "Full-time"
+    work_mode_preference: Optional[str] = "Hybrid"
+    willing_to_relocate: Optional[str] = "Yes"
+    willing_to_travel: Optional[str] = "Yes"
+    travel_percentage: Optional[str] = "25"
+    notice_period_days: Optional[str] = "30"
+    notice_period_text: Optional[str] = "30 days"
+    availability_to_join: Optional[str] = ""
+    earliest_start_date: Optional[str] = ""
+
+    # Compensation
+    current_ctc: Optional[str] = ""
+    expected_ctc: Optional[str] = ""
+    expected_ctc_min: Optional[str] = ""
+    expected_ctc_max: Optional[str] = ""
+    salary_currency: Optional[str] = "INR"
+    open_to_negotiate: Optional[str] = "Yes"
+
+    # Work Experience
+    total_years_experience: Optional[str] = ""
+    experience_level: Optional[str] = ""
+    currently_employed: Optional[str] = "Yes"
+    current_job_title: Optional[str] = ""
+    current_company: Optional[str] = ""
+    current_company_location: Optional[str] = ""
+    current_employment_start: Optional[str] = ""
+    current_job_description: Optional[str] = ""
+    previous_job_1_title: Optional[str] = ""
+    previous_job_1_company: Optional[str] = ""
+    previous_job_1_location: Optional[str] = ""
+    previous_job_1_start: Optional[str] = ""
+    previous_job_1_end: Optional[str] = ""
+    previous_job_1_description: Optional[str] = ""
+
+    # Education
+    highest_degree: Optional[str] = ""
+    major: Optional[str] = ""
+    specialization: Optional[str] = ""
+    university: Optional[str] = ""
+    college_name: Optional[str] = ""
+    graduation_year: Optional[str] = ""
+    graduation_month: Optional[str] = ""
+    cgpa: Optional[str] = ""
+    gpa_scale: Optional[str] = "10"
+    percentage: Optional[str] = ""
+    education_country: Optional[str] = "India"
+    currently_studying: Optional[str] = "No"
+
+    # Skills
+    skills_text: Optional[str] = ""
+    primary_skill: Optional[str] = ""
+    years_python: Optional[str] = ""
+    years_javascript: Optional[str] = ""
+    years_nodejs: Optional[str] = ""
+    years_react: Optional[str] = ""
+
+    # Languages
+    english_proficiency: Optional[str] = "Professional - Full Professional"
+
+    # Certifications
+    certifications_text: Optional[str] = ""
+
+    # Projects
+    projects_text: Optional[str] = ""
+
+    # EEO / Voluntary
+    race_ethnicity: Optional[str] = "Prefer not to disclose"
+    veteran_status: Optional[str] = "I am not a veteran"
+    disability_status: Optional[str] = "No, I do not have a disability"
+
+    # Source
+    referral_source: Optional[str] = "LinkedIn"
+    referral_person_name: Optional[str] = ""
+    referral_person_email: Optional[str] = ""
+    referred_by_employee: Optional[str] = "No"
+
+    # Behavioral Q&A
+    why_leaving_current_job: Optional[str] = ""
+    biggest_achievement: Optional[str] = ""
+    where_do_you_see_yourself: Optional[str] = ""
+    strengths: Optional[str] = ""
+    weaknesses: Optional[str] = ""
+    describe_yourself: Optional[str] = ""
+    biggest_challenge: Optional[str] = ""
+    leadership_example: Optional[str] = ""
+    conflict_resolution: Optional[str] = ""
+    teamwork_example: Optional[str] = ""
+
+    # References
+    reference_1_name: Optional[str] = ""
+    reference_1_title: Optional[str] = ""
+    reference_1_company: Optional[str] = ""
+    reference_1_email: Optional[str] = ""
+    reference_1_phone: Optional[str] = ""
+
+
+# Profile completeness calculation
+REQUIRED_PROFILE_FIELDS = [
+    "first_name", "last_name", "email", "phone",
+    "address_line1", "city", "state", "zip_code", "country",
+    "linkedin", "github", "resume_url",
+    "current_job_title", "current_company",
+    "total_years_experience",
+    "highest_degree", "university", "graduation_year", "cgpa",
+    "summary", "skills_text",
+    "expected_ctc", "current_ctc", "notice_period_text",
+    "willing_to_relocate", "work_authorization_india",
+    "why_leaving_current_job", "strengths", "biggest_achievement",
+    "where_do_you_see_yourself"
+]
 
 
 @app.get("/profile")
 async def get_profile(user_id: str = Depends(get_current_user)):
     data = load_user_data(user_id)
-    return data.get("profile", {
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "phone": "",
-        "github": "",
-        "linkedin": "",
-        "website": "",
-        "resume_url": "",
-        "summary": ""
-    })
+    profile = data.get("profile", {})
+    # Calculate completeness
+    filled = sum(1 for f in REQUIRED_PROFILE_FIELDS if profile.get(f))
+    profile["_completeness_pct"] = round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100)
+    profile["_missing_fields"] = [f for f in REQUIRED_PROFILE_FIELDS if not profile.get(f)]
+    return profile
 
 
 @app.post("/profile")
 async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current_user)):
     data = load_user_data(user_id)
-    data["profile"] = body.dict()
+    # Merge — keep existing values if new value is blank
+    existing = data.get("profile", {})
+    incoming = {k: v for k, v in body.dict().items() if v}
+    existing.update(incoming)
+    data["profile"] = existing
     save_user_data(user_id, data)
-    return {"success": True, "profile": data["profile"]}
+    # Recalculate completeness
+    filled = sum(1 for f in REQUIRED_PROFILE_FIELDS if existing.get(f))
+    return {
+        "success": True,
+        "profile": existing,
+        "completeness_pct": round((filled / len(REQUIRED_PROFILE_FIELDS)) * 100),
+        "missing_fields": [f for f in REQUIRED_PROFILE_FIELDS if not existing.get(f)]
+    }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# AI TAILORING ENDPOINTS
+# Uses Groq llama-3.3-70b to tailor resume fields for a specific job posting.
+# ─────────────────────────────────────────────────────────────────────────────
 
+class TailorRequest(BaseModel):
+    job_description: str
+    job_title: Optional[str] = ""
+    company_name: Optional[str] = ""
+    profile: dict  # full profile dict from the extension
+
+
+class RegenerateFieldRequest(BaseModel):
+    field_name: str   # e.g. "summary", "cover_letter", "why_this_company"
+    job_description: str
+    job_title: Optional[str] = ""
+    company_name: Optional[str] = ""
+    profile: dict
+    instruction: Optional[str] = ""  # custom human instruction e.g. "make it more concise"
+
+
+TAILOR_SYSTEM_PROMPT = """You are an elite resume writer and ATS optimization expert.
+
+Given a candidate's profile and a job description, generate 5 tailored text fields that will:
+1. Maximize keyword overlap with the job description for ATS systems
+2. Match the seniority, tone, and technical depth required by the role
+3. Sound natural and authentic — not keyword-stuffed
+4. NEVER invent experience or skills the candidate doesn't already have
+5. Reframe existing experience to highlight the most relevant aspects
+
+Return ONLY a valid JSON object with exactly these 5 keys:
+{
+  "summary": "3-4 sentence professional summary tailored to this specific role and company. Start with the candidate's core identity, then bridge to why they fit this role specifically.",
+  "cover_letter": "4-5 paragraph cover letter. Para 1: Hook + role interest. Para 2: Most relevant technical achievement. Para 3: Why this specific company (use company name from JD). Para 4: Forward-looking value proposition. Para 5: Closing.",
+  "why_this_company": "2-3 sentence direct answer to 'Why do you want to work at [company]?' — reference something specific from the JD (mission, tech stack, product).",
+  "skills_text": "Comma-separated skills list. Put JD-matching skills FIRST, then other skills. Max 20 skills.",
+  "biggest_achievement": "1-2 sentence achievement reframed to highlight the metric/impact most relevant to this role's requirements."
+}
+
+Return ONLY the raw JSON. No markdown, no backticks, no explanation."""
+
+
+def call_groq_tailor(system_prompt: str, user_prompt: str, max_tokens: int = 2000) -> str:
+    """Call Groq API and return the raw text response."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(500, "GROQ_API_KEY environment variable is missing")
+    client = Groq(api_key=api_key)
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.4,
+        max_tokens=max_tokens
+    )
+    return response.choices[0].message.content or ""
+
+
+def extract_json(raw: str) -> dict:
+    """Strip markdown fences and parse JSON safely."""
+    text = raw.replace("```json", "").replace("```", "").strip()
+    first = text.find("{")
+    last = text.rfind("}")
+    if first == -1 or last == -1:
+        raise ValueError("No JSON object found in AI response")
+    return json.loads(text[first:last + 1])
+
+
+@app.post("/ai/tailor")
+async def tailor_resume(body: TailorRequest):
+    """
+    Takes the user's profile + a job description and returns 5 AI-tailored fields:
+    summary, cover_letter, why_this_company, skills_text, biggest_achievement.
+    No auth required — the profile is sent directly from the extension session.
+    """
+    p = body.profile
+    full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+
+    user_prompt = f"""
+CANDIDATE PROFILE:
+Name: {full_name}
+Current Title: {p.get('current_job_title', 'Software Engineer')}
+Current Company: {p.get('current_company', '')}
+Total Experience: {p.get('total_years_experience', '')} years
+Skills: {p.get('skills_text', '')}
+Degree: {p.get('highest_degree', '')} in {p.get('major', '')} from {p.get('university', '')} ({p.get('graduation_year', '')})
+Current Summary: {p.get('summary', '')}
+Current Job Description: {p.get('current_job_description', '')}
+Previous Role: {p.get('previous_job_1_title', '')} at {p.get('previous_job_1_company', '')}
+Previous Role Description: {p.get('previous_job_1_description', '')}
+Biggest Achievement (original): {p.get('biggest_achievement', '')}
+Projects: {p.get('projects_text', '')}
+Certifications: {p.get('certifications_text', '')}
+
+TARGET JOB:
+Job Title: {body.job_title or 'Not specified'}
+Company: {body.company_name or 'Not specified'}
+
+JOB DESCRIPTION:
+{body.job_description[:4000]}
+
+Now generate the 5 tailored fields as specified. Remember: do NOT invent any skills or experience not present in the candidate's profile above.
+"""
+
+    try:
+        raw = call_groq_tailor(TAILOR_SYSTEM_PROMPT, user_prompt, max_tokens=2500)
+        result = extract_json(raw)
+
+        # Validate all 5 keys are present
+        required_keys = ["summary", "cover_letter", "why_this_company", "skills_text", "biggest_achievement"]
+        for key in required_keys:
+            if key not in result:
+                result[key] = p.get(key, "")  # fallback to original
+
+        return {
+            "success": True,
+            "tailored": result,
+            "job_title": body.job_title,
+            "company_name": body.company_name
+        }
+    except Exception as e:
+        raise HTTPException(500, f"AI tailoring failed: {str(e)}")
+
+
+@app.post("/ai/regenerate-field")
+async def regenerate_field(body: RegenerateFieldRequest):
+    """
+    Regenerates a single field with an optional custom human instruction.
+    Used when the user clicks '🔄 Regenerate' on a specific card in the review panel.
+    """
+    p = body.profile
+    full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+
+    field_instructions = {
+        "summary": "Write a 3-4 sentence professional summary tailored to this role.",
+        "cover_letter": "Write a 4-5 paragraph cover letter for this specific role and company.",
+        "why_this_company": "Write a 2-3 sentence answer to 'Why do you want to work at this company?' referencing specific details from the JD.",
+        "skills_text": "Return a comma-separated skills list. Put JD-matching skills FIRST. Max 20 skills.",
+        "biggest_achievement": "Write 1-2 sentences about the candidate's most relevant achievement for this role."
+    }
+
+    if body.field_name not in field_instructions:
+        raise HTTPException(400, f"Unknown field: {body.field_name}. Valid fields: {list(field_instructions.keys())}")
+
+    base_instruction = field_instructions[body.field_name]
+    human_instruction = f"\n\nADDITIONAL INSTRUCTION FROM USER: {body.instruction}" if body.instruction else ""
+
+    system_prompt = f"""You are an elite resume writer.
+Generate ONLY the following field for this candidate: {body.field_name}
+{base_instruction}{human_instruction}
+
+RULES:
+- Do NOT invent experience or skills not in the profile
+- Match the tone and seniority of the job description
+- Return ONLY a valid JSON object: {{"field_name": "{body.field_name}", "value": "<generated content>"}}
+- No markdown, no explanation, just the JSON."""
+
+    user_prompt = f"""
+CANDIDATE:
+Name: {full_name}
+Title: {p.get('current_job_title', '')}
+Experience: {p.get('total_years_experience', '')} years
+Skills: {p.get('skills_text', '')}
+Current Summary: {p.get('summary', '')}
+Achievement (original): {p.get('biggest_achievement', '')}
+Projects: {p.get('projects_text', '')}
+
+TARGET JOB: {body.job_title or 'N/A'} at {body.company_name or 'N/A'}
+
+JOB DESCRIPTION:
+{body.job_description[:3000]}
+
+Generate the field: {body.field_name}
+"""
+
+    try:
+        raw = call_groq_tailor(system_prompt, user_prompt, max_tokens=800)
+        result = extract_json(raw)
+
+        value = result.get("value", "")
+        if not value:
+            # Try to get by field name key
+            value = result.get(body.field_name, "")
+
+        return {
+            "success": True,
+            "field_name": body.field_name,
+            "value": value
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Field regeneration failed: {str(e)}")

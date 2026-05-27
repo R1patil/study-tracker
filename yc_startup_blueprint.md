@@ -145,10 +145,29 @@ We use a **CrewAI / LangGraph** multi-agent setup running distinct roles:
 * **Proprietary Memory Graph**: Once a user has 6 months of behavioral, learning, and career data stored, the AI's personalized coaching becomes irreplaceable.
 * **Local-First Privacy**: By hosting data locally (queried via Coral in WSL), developers and enterprises will trust this platform with sensitive codebases and resumes, which cloud-only trackers cannot achieve.
 
-### Phase 1: MVP Focus (Weeks 1 - 6)
-* Launch theMV3 Chrome Extension for Auto-Filling Lever and Greenhouse job forms.
-* Integrate the LinkedIn job scraper.
-* Build the basic Memory Graph using PostgreSQL + `pgvector`.
+### Phase 1: MVP Focus (Weeks 1 - 6) — ✅ PARTIALLY COMPLETE
+* ✅ Launch the MV3 Chrome Extension for Auto-Filling Lever and Greenhouse job forms.
+* ✅ Integrate the LinkedIn job scraper (basic popup + profile fetch).
+* ✅ Build the basic Memory Graph using PostgreSQL + `pgvector`.
+* ✅ Chrome Extension v1 — fills name, email, phone, LinkedIn, GitHub, summary.
+
+### Phase 1B: Extended Profile & Full ATS Coverage — ✅ COMPLETE
+* ✅ `extended_profile_template.json` — 50+ fields covering ALL ATS questions (address, education, work auth, compensation, behavioral answers, EEO).
+* ✅ `content.js` v2.0 — handles `<select>` dropdowns, radio buttons, checkboxes, and 50+ field types.
+* ✅ `workday_content.js` — Workday shadow DOM piercing, ARIA radio/checkbox handling, multi-step form MutationObserver.
+* ✅ `icims_content.js` — iCIMS iframe + jQuery handler with 500ms delay for slow form loads.
+* ✅ `manifest.json` — domain-specific routing: Workday handler → `*.myworkdayjobs.com`, iCIMS handler → `*.icims.com`, universal handler → all other ATS sites.
+* ✅ Backend `ProfileUpdate` model — expanded from 9 to 110+ fields with completeness scoring.
+* ✅ Backend `/profile` GET — returns `_completeness_pct` and `_missing_fields` list.
+* ✅ Backend `/profile` POST — smart merge (preserves existing values, only overwrites if new value provided).
+* ✅ `popup.html` + `popup.js` v2.0 — profile completeness % bar, missing field chips, ATS auto-detector (16 platforms), field count after autofill.
+
+
+### Job Application Sites To Use
+* **Tier 1 (High Volume):** LinkedIn Easy Apply, Naukri.com, Indeed, Instahyre, Foundit, Shine
+* **ATS Platforms:** Workday (`*.myworkdayjobs.com`), Greenhouse (`boards.greenhouse.io`), Lever (`jobs.lever.co`), Ashby (`jobs.ashby.com`), SmartRecruiters, BambooHR
+* **India Startups:** Cutshort, AngelList/Wellfound, Hirist, HackerEarth Jobs
+* **Top Direct Pages:** Google Careers, Swiggy, Razorpay, Zepto, CRED, PhonePe, Meesho, BrowserStack
 
 ### Phase 2: Behavioral Integration (Weeks 7 - 12)
 * Release the Desktop Rust Daemon for background distraction/productivity logging.
@@ -158,3 +177,4 @@ We use a **CrewAI / LangGraph** multi-agent setup running distinct roles:
 ### Phase 3: Scaling & AGI Integration (Weeks 13+)
 * Integrate multi-agent LangGraph workflow for job application tracking.
 * Launch corporate enterprise workspace support (protecting IP while optimizing developer focus).
+
