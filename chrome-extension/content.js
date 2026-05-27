@@ -130,6 +130,44 @@ function fillSelect(select, value) {
 }
 
 // ─────────────────────────────────────────────
+// UTILITY: Clean phone numbers by stripping country codes like +91
+// ─────────────────────────────────────────────
+function cleanPhoneNumberForInput(phone, labelText = "") {
+  if (!phone) return "";
+  let clean = phone.trim();
+
+  // If it's a country code selector, don't clean
+  const lbl = labelText.toLowerCase();
+  if (lbl.includes("country code") || lbl.includes("phone code")) {
+    return clean;
+  }
+
+  if (clean.startsWith("+")) {
+    if (clean.startsWith("+91")) {
+      clean = clean.slice(3);
+    } else if (clean.startsWith("+1")) {
+      clean = clean.slice(2);
+    } else {
+      const digitsOnly = clean.replace(/\D/g, "");
+      if (digitsOnly.length > 10) {
+        clean = digitsOnly.slice(digitsOnly.length - 10);
+      }
+    }
+  }
+
+  clean = clean.replace(/\D/g, "");
+
+  if (clean.length === 12 && clean.startsWith("91")) {
+    clean = clean.slice(2);
+  } else if (clean.length === 11 && (clean.startsWith("1") || clean.startsWith("0"))) {
+    clean = clean.slice(1);
+  }
+
+  return clean;
+}
+
+
+// ─────────────────────────────────────────────
 // UTILITY: Fill radio button group
 // ─────────────────────────────────────────────
 function fillRadioGroup(radios, value) {
@@ -265,11 +303,16 @@ function autofillForm(profile) {
       if (field.value === fullName && hasFirstField && !isFullName) continue;
 
       if (matchesKeywords(testStr, field.keywords)) {
-        setNativeValue(input, field.value);
+        let valToFill = field.value;
+        if (field.keywords.includes("phone") || field.keywords.includes("mobile") || field.keywords.includes("telephone")) {
+          valToFill = cleanPhoneNumberForInput(field.value, labelText);
+        }
+        setNativeValue(input, valToFill);
         filledCount++;
         break;
       }
     }
+
   });
 
   // ── PROCESS SELECT DROPDOWNS ──
