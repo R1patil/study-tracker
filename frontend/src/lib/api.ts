@@ -93,4 +93,12 @@ export const getGithubFileContent = (owner: string, repo: string, path: string, 
 export const getGithubBranchSummary = (owner: string, repo: string, branch: string) =>
     apiFetch(`/github/branch-summary?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}`);
 export const getProfile = () => apiFetch('/profile');
-export const updateProfile = (profile: any) => apiFetch('/profile', { method: 'POST', body: JSON.stringify(profile) });
+export const updateProfile = (profile: any) => apiFetch('/profile', { method: 'POST', body: JSON.stringify(profile) });
+
+export const getActivityIntervention = () => apiFetch('/activity/intervention');
+export const completeFocusSprint = (topicId: string, topicTitle: string) =>
+    apiFetch('/activity/sprint-complete', { method: 'POST', body: JSON.stringify({ topic_id: topicId, topic_title: topicTitle }) });
+export const syncYoutubeVideos = (videos: any[]) =>
+    apiFetch('/youtube/sync', { method: 'POST', body: JSON.stringify({ videos }) });
+export const ingestActivity = (events: any[]) =>
+    apiFetch('/activity/ingest', { method: 'POST', body: JSON.stringify({ events }) });

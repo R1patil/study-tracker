@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { syncYoutubeVideos } from "@/lib/api";
 
 const CHANNEL_URL = "https://www.youtube.com/@R-B107";
 
@@ -74,13 +75,18 @@ export default function YouTubePage() {
             if (!data.user) return;
             setUserId(data.user.id);
             const stored = localStorage.getItem(storageKey(data.user.id));
-            if (stored) setVideos(JSON.parse(stored));
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                setVideos(parsed);
+                syncYoutubeVideos(parsed).catch(err => console.error("Initial YouTube sync failed:", err));
+            }
         });
     }, []);
 
     const save = (updated: YTVideo[], uid: string) => {
         setVideos(updated);
         localStorage.setItem(storageKey(uid), JSON.stringify(updated));
+        syncYoutubeVideos(updated).catch(err => console.error("YouTube sync failed:", err));
     };
 
     const handleAdd = () => {

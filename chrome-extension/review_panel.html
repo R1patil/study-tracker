@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Jarvis OS — AI Review Panel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0f172a;
+      --surface: rgba(255,255,255,0.03);
+      --surface-hover: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08);
+      --border-focus: rgba(99,102,241,0.5);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-glow: rgba(99,102,241,0.35);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      font-size: 22px;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(to right, #a5b4fc, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: block;
+      margin-top: -2px;
+      -webkit-text-fill-color: var(--text-muted);
+    }
+
+    /* ── JOB CONTEXT BADGE ── */
+    .job-context {
+      flex: 1;
+      max-width: 420px;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .job-context-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #a5b4fc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .job-context-company {
+      font-size: 11px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99,102,241,0.55);
+    }
+
+    .btn-primary:disabled {
+      background: rgba(255,255,255,0.07);
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.09);
+      color: var(--text);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    }
+
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      padding: 24px 20px 100px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .section-heading {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-heading::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── FIELD CARDS ── */
+    .fields-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .field-card:hover {
+      border-color: rgba(99,102,241,0.3);
+    }
+
+    .field-card.editing {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+    }
+
+    .field-card.regenerating {
+      border-color: rgba(245,158,11,0.4);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.06);
+    }
+
+    .field-card.updated {
+      border-color: rgba(16,185,129,0.4);
+      animation: glow-success 1.5s ease forwards;
+    }
+
+    /* ── CARD HEADER ── */
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .card-header:hover { background: var(--surface-hover); }
+
+    .field-icon { font-size: 16px; flex-shrink: 0; }
+
+    .field-label {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #c7d2fe;
+    }
+
+    .field-badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(99,102,241,0.12);
+      color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+
+    .field-badge.edited { background: rgba(245,158,11,0.12); color: #fbbf24; border-color: rgba(245,158,11,0.25); }
+    .field-badge.regenerated { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.25); }
+
+    .card-toggle {
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .card-toggle.open { transform: rotate(180deg); }
+
+    /* ── CARD BODY ── */
+    .card-body {
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .card-body.open {
+      max-height: 600px;
+    }
+
+    .card-body-inner { padding: 14px 16px 16px; }
+
+    /* ── PREVIEW / TEXTAREA ── */
+    .field-preview {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: text;
+      min-height: 48px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .field-preview:hover {
+      border-color: rgba(99,102,241,0.3);
+      color: var(--text);
+    }
+
+    .field-textarea {
+      width: 100%;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border-focus);
+      border-radius: 8px;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+      display: none;
+    }
+
+    .field-textarea:focus { border-color: var(--accent); }
+
+    /* ── REGENERATE ROW ── */
+    .regen-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .regen-input {
+      flex: 1;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .regen-input::placeholder { color: var(--text-muted); }
+    .regen-input:focus { border-color: rgba(99,102,241,0.5); }
+
+    .btn-regen {
+      background: rgba(245,158,11,0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-regen:hover {
+      background: rgba(245,158,11,0.2);
+      border-color: rgba(245,158,11,0.4);
+    }
+
+    .btn-regen:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    /* ── LOADING SKELETON ── */
+    .skeleton-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .skeleton-card {
+      height: 68px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .status-msg {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+    }
+
+    .apply-btn-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      z-index: 200;
+      animation: slideIn 0.3s ease;
+      backdrop-filter: blur(12px);
+    }
+
+    .toast.error {
+      background: rgba(239,68,68,0.12);
+      border-color: rgba(239,68,68,0.25);
+      color: #f87171;
+    }
+
+    /* ── LOADING OVERLAY ── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 300;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(99,102,241,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #a5b4fc;
+    }
+
+    .loading-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: -10px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.75; transform:scale(1.1); } }
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes glow-success { 0% { box-shadow:0 0 0 0 rgba(16,185,129,0.5); } 50% { box-shadow:0 0 0 8px rgba(16,185,129,0.1); } 100% { box-shadow:0 0 0 0 transparent; } }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Jarvis is analyzing the job...</div>
+    <div class="loading-sub">Tailoring your profile with AI (5-10s)</div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo-row">
+      <span class="logo-icon">🪄</span>
+      <div>
+        <span class="logo-text">AI Review Panel</span>
+        <span class="logo-sub">Human-in-the-Loop</span>
+      </div>
+    </div>
+
+    <div class="job-context" id="job-context">
+      <div class="job-context-title" id="ctx-title">Analyzing job...</div>
+      <div class="job-context-company" id="ctx-company">Loading...</div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-secondary" id="cancel-btn">✕ Cancel</button>
+      <button class="btn btn-success" id="apply-btn" disabled>✅ Apply Tailored Profile</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="section-heading">✨ AI-Generated Fields — Review &amp; Edit Before Applying</div>
+
+    <!-- SKELETON while loading -->
+    <div class="skeleton-cards" id="skeleton">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+
+    <!-- FIELD CARDS (populated by JS) -->
+    <div class="fields-grid" id="fields-grid" style="display:none;"></div>
+  </div>
+
+  <!-- BOTTOM STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-msg">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-msg-text">Loading AI tailored fields...</span>
+    </div>
+    <div class="apply-btn-wrap">
+      <button class="btn btn-secondary" id="cancel-btn-2">Discard</button>
+      <button class="btn btn-success" id="apply-btn-2" disabled>✅ Apply Tailored Profile</button>
+    </div>
+  </div>
+
+  <script src="review_panel.js"></script>
+</body>
+</html>

@@ -1,98 +1,98 @@
-{"topic_id": "sd_01", "title": "Scalability", "track": "System Design", "section": "Core Concepts", "status": "in_progress", "notes": "", "updated_at": "2026-05-25T15:01:50.371316"}
-{"topic_id": "sd_02", "title": "Availability", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371386"}
-{"topic_id": "sd_03", "title": "Reliability", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371420"}
-{"topic_id": "sd_04", "title": "SPOF", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371443"}
-{"topic_id": "sd_05", "title": "Latency vs Throughput vs Bandwidth", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371463"}
-{"topic_id": "sd_06", "title": "Consistent Hashing", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371484"}
-{"topic_id": "sd_07", "title": "CAP Theorem", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371504"}
-{"topic_id": "sd_08", "title": "Failover", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371542"}
-{"topic_id": "sd_09", "title": "Fault Tolerance", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371560"}
-{"topic_id": "sd_10", "title": "OSI Model", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371624"}
-{"topic_id": "sd_11", "title": "IP Addresses", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371647"}
-{"topic_id": "sd_12", "title": "DNS", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371666"}
-{"topic_id": "sd_13", "title": "Proxy vs Reverse Proxy", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371685"}
-{"topic_id": "sd_14", "title": "HTTP/HTTPS", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.371953"}
-{"topic_id": "sd_15", "title": "TCP vs UDP", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372007"}
-{"topic_id": "sd_16", "title": "Load Balancing", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372036"}
-{"topic_id": "sd_17", "title": "Checksums", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372061"}
-{"topic_id": "sd_18", "title": "APIs", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372086"}
-{"topic_id": "sd_19", "title": "API Gateway", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372108"}
-{"topic_id": "sd_20", "title": "REST vs GraphQL", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372127"}
-{"topic_id": "sd_21", "title": "WebSockets", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372147"}
-{"topic_id": "sd_22", "title": "Webhooks", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372166"}
-{"topic_id": "sd_23", "title": "Idempotency", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372186"}
-{"topic_id": "sd_24", "title": "Rate Limiting", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372206"}
-{"topic_id": "sd_25", "title": "ACID Transactions", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372228"}
-{"topic_id": "sd_26", "title": "SQL vs NoSQL", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372248"}
-{"topic_id": "sd_27", "title": "Database Indexes", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372298"}
-{"topic_id": "sd_28", "title": "Database Sharding", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372319"}
-{"topic_id": "sd_29", "title": "Data Replication", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372339"}
-{"topic_id": "sd_30", "title": "Database Scaling", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372357"}
-{"topic_id": "sd_31", "title": "Bloom Filters", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372375"}
-{"topic_id": "sd_32", "title": "Caching 101", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372395"}
-{"topic_id": "sd_33", "title": "Caching Strategies", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372414"}
-{"topic_id": "sd_34", "title": "Cache Eviction Policies", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372433"}
-{"topic_id": "sd_35", "title": "Distributed Caching", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372452"}
-{"topic_id": "sd_36", "title": "CDN", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372471"}
-{"topic_id": "sd_37", "title": "HeartBeats", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372492"}
-{"topic_id": "sd_38", "title": "Service Discovery", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372511"}
-{"topic_id": "sd_39", "title": "Consensus Algorithms", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372531"}
-{"topic_id": "sd_40", "title": "Distributed Locking", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372550"}
-{"topic_id": "sd_41", "title": "Gossip Protocol", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372569"}
-{"topic_id": "sd_42", "title": "Circuit Breaker", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372588"}
-{"topic_id": "sd_43", "title": "Distributed Tracing", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372607"}
-{"topic_id": "sd_44", "title": "Design URL Shortener", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372628"}
-{"topic_id": "sd_45", "title": "Design Load Balancer", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372647"}
-{"topic_id": "sd_46", "title": "Design WhatsApp", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372665"}
-{"topic_id": "sd_47", "title": "Design Spotify", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372683"}
-{"topic_id": "sd_48", "title": "Design Instagram", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372702"}
-{"topic_id": "sd_49", "title": "Design Uber", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372721"}
-{"topic_id": "sd_50", "title": "Design Google Maps", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372739"}
-{"topic_id": "sd_51", "title": "Design Distributed Web Crawler", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372758"}
-{"topic_id": "sd_52", "title": "Design Zoom", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372776"}
-{"topic_id": "ml_01", "title": "Linear Regression", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372799"}
-{"topic_id": "ml_02", "title": "Logistic Regression", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.372820"}
-{"topic_id": "ml_03", "title": "Decision Trees", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373041"}
-{"topic_id": "ml_04", "title": "Random Forests", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373093"}
-{"topic_id": "ml_05", "title": "SVM", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373121"}
-{"topic_id": "ml_06", "title": "Gradient Boosting / XGBoost", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373142"}
-{"topic_id": "ml_07", "title": "K-Means Clustering", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373164"}
-{"topic_id": "ml_08", "title": "PCA & Dimensionality Reduction", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373185"}
-{"topic_id": "ml_09", "title": "Neural Networks Basics", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373208"}
-{"topic_id": "ml_10", "title": "Backpropagation", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373228"}
-{"topic_id": "ml_11", "title": "CNNs", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373247"}
-{"topic_id": "ml_12", "title": "RNNs & LSTMs", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373265"}
-{"topic_id": "ml_13", "title": "Transformers & Attention", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373285"}
-{"topic_id": "ml_14", "title": "Regularization (Dropout, BatchNorm)", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373309"}
-{"topic_id": "ml_15", "title": "Optimizers (Adam, SGD)", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373328"}
-{"topic_id": "ml_16", "title": "Recommendation Systems", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373347"}
-{"topic_id": "ml_17", "title": "Search Ranking", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373366"}
-{"topic_id": "ml_18", "title": "Fraud Detection", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373385"}
-{"topic_id": "ml_19", "title": "Ad Click Prediction", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373403"}
-{"topic_id": "ml_20", "title": "NLP Pipeline Design", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373421"}
-{"topic_id": "ml_21", "title": "Model Evaluation & Metrics", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373439"}
-{"topic_id": "ml_22", "title": "Implement Linear Regression from scratch", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373459"}
-{"topic_id": "ml_23", "title": "Implement Softmax", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373479"}
-{"topic_id": "ml_24", "title": "Implement K-Means", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373547"}
-{"topic_id": "ml_25", "title": "Implement Cross-Entropy Loss", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373569"}
-{"topic_id": "ml_26", "title": "Implement Batch Norm", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373592"}
-{"topic_id": "mo_01", "title": "Docker Basics", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373617"}
-{"topic_id": "mo_02", "title": "Writing Dockerfiles", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373636"}
-{"topic_id": "mo_03", "title": "Docker Compose", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373655"}
-{"topic_id": "mo_04", "title": "Container Registries", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373673"}
-{"topic_id": "mo_05", "title": "Kubernetes Basics", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373692"}
-{"topic_id": "mo_06", "title": "Pods, Deployments, Services", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373710"}
-{"topic_id": "mo_07", "title": "Helm Charts", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373729"}
-{"topic_id": "mo_08", "title": "Kubeflow Pipelines", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373746"}
-{"topic_id": "mo_09", "title": "GitHub Actions for ML", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373764"}
-{"topic_id": "mo_10", "title": "Jenkins Pipelines", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373782"}
-{"topic_id": "mo_11", "title": "Automated Testing for ML", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373800"}
-{"topic_id": "mo_12", "title": "MLflow Basics", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373818"}
-{"topic_id": "mo_13", "title": "MLflow Model Registry", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373836"}
-{"topic_id": "mo_14", "title": "DVC (Data Version Control)", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373854"}
-{"topic_id": "mo_15", "title": "Weights & Biases", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373872"}
-{"topic_id": "mo_16", "title": "FastAPI Model Serving", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373893"}
-{"topic_id": "mo_17", "title": "BentoML", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373911"}
-{"topic_id": "mo_18", "title": "Model Monitoring (Evidently)", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373930"}
-{"topic_id": "mo_19", "title": "Data Drift Detection", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373948"}
-{"topic_id": "mo_20", "title": "Prometheus + Grafana for ML", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-25T15:01:50.373965"}
+{"topic_id": "sd_01", "title": "Scalability", "track": "System Design", "section": "Core Concepts", "status": "in_progress", "notes": "", "updated_at": "2026-05-26T13:43:18.508369"}
+{"topic_id": "sd_02", "title": "Availability", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508397"}
+{"topic_id": "sd_03", "title": "Reliability", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508409"}
+{"topic_id": "sd_04", "title": "SPOF", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508417"}
+{"topic_id": "sd_05", "title": "Latency vs Throughput vs Bandwidth", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508424"}
+{"topic_id": "sd_06", "title": "Consistent Hashing", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508430"}
+{"topic_id": "sd_07", "title": "CAP Theorem", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508437"}
+{"topic_id": "sd_08", "title": "Failover", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508443"}
+{"topic_id": "sd_09", "title": "Fault Tolerance", "track": "System Design", "section": "Core Concepts", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508449"}
+{"topic_id": "sd_10", "title": "OSI Model", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508456"}
+{"topic_id": "sd_11", "title": "IP Addresses", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508463"}
+{"topic_id": "sd_12", "title": "DNS", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508469"}
+{"topic_id": "sd_13", "title": "Proxy vs Reverse Proxy", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508475"}
+{"topic_id": "sd_14", "title": "HTTP/HTTPS", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508481"}
+{"topic_id": "sd_15", "title": "TCP vs UDP", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508487"}
+{"topic_id": "sd_16", "title": "Load Balancing", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508493"}
+{"topic_id": "sd_17", "title": "Checksums", "track": "System Design", "section": "Networking Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508499"}
+{"topic_id": "sd_18", "title": "APIs", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508505"}
+{"topic_id": "sd_19", "title": "API Gateway", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508512"}
+{"topic_id": "sd_20", "title": "REST vs GraphQL", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508518"}
+{"topic_id": "sd_21", "title": "WebSockets", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508524"}
+{"topic_id": "sd_22", "title": "Webhooks", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508530"}
+{"topic_id": "sd_23", "title": "Idempotency", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508537"}
+{"topic_id": "sd_24", "title": "Rate Limiting", "track": "System Design", "section": "API Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508544"}
+{"topic_id": "sd_25", "title": "ACID Transactions", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508551"}
+{"topic_id": "sd_26", "title": "SQL vs NoSQL", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508558"}
+{"topic_id": "sd_27", "title": "Database Indexes", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508566"}
+{"topic_id": "sd_28", "title": "Database Sharding", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508573"}
+{"topic_id": "sd_29", "title": "Data Replication", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508579"}
+{"topic_id": "sd_30", "title": "Database Scaling", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508585"}
+{"topic_id": "sd_31", "title": "Bloom Filters", "track": "System Design", "section": "Database Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508591"}
+{"topic_id": "sd_32", "title": "Caching 101", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508597"}
+{"topic_id": "sd_33", "title": "Caching Strategies", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508603"}
+{"topic_id": "sd_34", "title": "Cache Eviction Policies", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508609"}
+{"topic_id": "sd_35", "title": "Distributed Caching", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508615"}
+{"topic_id": "sd_36", "title": "CDN", "track": "System Design", "section": "Caching Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508620"}
+{"topic_id": "sd_37", "title": "HeartBeats", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508626"}
+{"topic_id": "sd_38", "title": "Service Discovery", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508632"}
+{"topic_id": "sd_39", "title": "Consensus Algorithms", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508638"}
+{"topic_id": "sd_40", "title": "Distributed Locking", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508644"}
+{"topic_id": "sd_41", "title": "Gossip Protocol", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508650"}
+{"topic_id": "sd_42", "title": "Circuit Breaker", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508656"}
+{"topic_id": "sd_43", "title": "Distributed Tracing", "track": "System Design", "section": "Distributed Systems & Microservices", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508662"}
+{"topic_id": "sd_44", "title": "Design URL Shortener", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508668"}
+{"topic_id": "sd_45", "title": "Design Load Balancer", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508674"}
+{"topic_id": "sd_46", "title": "Design WhatsApp", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508679"}
+{"topic_id": "sd_47", "title": "Design Spotify", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508685"}
+{"topic_id": "sd_48", "title": "Design Instagram", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508691"}
+{"topic_id": "sd_49", "title": "Design Uber", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508697"}
+{"topic_id": "sd_50", "title": "Design Google Maps", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508702"}
+{"topic_id": "sd_51", "title": "Design Distributed Web Crawler", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508708"}
+{"topic_id": "sd_52", "title": "Design Zoom", "track": "System Design", "section": "Interview Problems", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508714"}
+{"topic_id": "ml_01", "title": "Linear Regression", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508721"}
+{"topic_id": "ml_02", "title": "Logistic Regression", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508728"}
+{"topic_id": "ml_03", "title": "Decision Trees", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508734"}
+{"topic_id": "ml_04", "title": "Random Forests", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508739"}
+{"topic_id": "ml_05", "title": "SVM", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508745"}
+{"topic_id": "ml_06", "title": "Gradient Boosting / XGBoost", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508750"}
+{"topic_id": "ml_07", "title": "K-Means Clustering", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508756"}
+{"topic_id": "ml_08", "title": "PCA & Dimensionality Reduction", "track": "Machine Learning", "section": "ML Fundamentals", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508762"}
+{"topic_id": "ml_09", "title": "Neural Networks Basics", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508768"}
+{"topic_id": "ml_10", "title": "Backpropagation", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508773"}
+{"topic_id": "ml_11", "title": "CNNs", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508779"}
+{"topic_id": "ml_12", "title": "RNNs & LSTMs", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508784"}
+{"topic_id": "ml_13", "title": "Transformers & Attention", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508790"}
+{"topic_id": "ml_14", "title": "Regularization (Dropout, BatchNorm)", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508797"}
+{"topic_id": "ml_15", "title": "Optimizers (Adam, SGD)", "track": "Machine Learning", "section": "Deep Learning", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508803"}
+{"topic_id": "ml_16", "title": "Recommendation Systems", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508809"}
+{"topic_id": "ml_17", "title": "Search Ranking", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508815"}
+{"topic_id": "ml_18", "title": "Fraud Detection", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508821"}
+{"topic_id": "ml_19", "title": "Ad Click Prediction", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508827"}
+{"topic_id": "ml_20", "title": "NLP Pipeline Design", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508832"}
+{"topic_id": "ml_21", "title": "Model Evaluation & Metrics", "track": "Machine Learning", "section": "ML System Design", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508838"}
+{"topic_id": "ml_22", "title": "Implement Linear Regression from scratch", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508844"}
+{"topic_id": "ml_23", "title": "Implement Softmax", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508850"}
+{"topic_id": "ml_24", "title": "Implement K-Means", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508856"}
+{"topic_id": "ml_25", "title": "Implement Cross-Entropy Loss", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508862"}
+{"topic_id": "ml_26", "title": "Implement Batch Norm", "track": "Machine Learning", "section": "ML Coding Questions", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508869"}
+{"topic_id": "mo_01", "title": "Docker Basics", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508876"}
+{"topic_id": "mo_02", "title": "Writing Dockerfiles", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508882"}
+{"topic_id": "mo_03", "title": "Docker Compose", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508888"}
+{"topic_id": "mo_04", "title": "Container Registries", "track": "MLOps Zero to Hero", "section": "Containerization", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508894"}
+{"topic_id": "mo_05", "title": "Kubernetes Basics", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508900"}
+{"topic_id": "mo_06", "title": "Pods, Deployments, Services", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508905"}
+{"topic_id": "mo_07", "title": "Helm Charts", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508911"}
+{"topic_id": "mo_08", "title": "Kubeflow Pipelines", "track": "MLOps Zero to Hero", "section": "Orchestration", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508916"}
+{"topic_id": "mo_09", "title": "GitHub Actions for ML", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508922"}
+{"topic_id": "mo_10", "title": "Jenkins Pipelines", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508928"}
+{"topic_id": "mo_11", "title": "Automated Testing for ML", "track": "MLOps Zero to Hero", "section": "CI/CD for ML", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508933"}
+{"topic_id": "mo_12", "title": "MLflow Basics", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508939"}
+{"topic_id": "mo_13", "title": "MLflow Model Registry", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508944"}
+{"topic_id": "mo_14", "title": "DVC (Data Version Control)", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508950"}
+{"topic_id": "mo_15", "title": "Weights & Biases", "track": "MLOps Zero to Hero", "section": "Experiment Tracking", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508955"}
+{"topic_id": "mo_16", "title": "FastAPI Model Serving", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508962"}
+{"topic_id": "mo_17", "title": "BentoML", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508968"}
+{"topic_id": "mo_18", "title": "Model Monitoring (Evidently)", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508974"}
+{"topic_id": "mo_19", "title": "Data Drift Detection", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508979"}
+{"topic_id": "mo_20", "title": "Prometheus + Grafana for ML", "track": "MLOps Zero to Hero", "section": "Model Serving & Monitoring", "status": "not_started", "notes": "", "updated_at": "2026-05-26T13:43:18.508985"}
