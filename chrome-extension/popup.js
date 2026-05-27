@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://localhost:8000";
+let BACKEND_URL = "http://localhost:8000";
 
 // ─────────────────────────────────────────────────────────────────
 // ATS DETECTION: detect which platform we are on
@@ -264,7 +264,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
           if (results?.[0]?.result) {
             token = results[0].result;
-            await chrome.storage.local.set({ supabase_token: token });
+            const isProd = tab.url.includes("vercel.app") || tab.url.includes("study-tracker");
+            const backendUrl = isProd ? "https://promaxrahul-study-tracker-backend.hf.space" : "http://localhost:8000";
+            await chrome.storage.local.set({ supabase_token: token, backend_url: backendUrl });
             break;
           }
         }
@@ -290,12 +292,24 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const decoded = decodeURIComponent(cookie.value);
                 const parsed = JSON.parse(decoded);
                 const t = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
-                if (t) { token = t; await chrome.storage.local.set({ supabase_token: t }); break; }
+                if (t) {
+                  token = t;
+                  const isProd = target.url.includes("vercel.app") || target.url.includes("study-tracker");
+                  const backendUrl = isProd ? "https://promaxrahul-study-tracker-backend.hf.space" : "http://localhost:8000";
+                  await chrome.storage.local.set({ supabase_token: t, backend_url: backendUrl });
+                  break;
+                }
               } catch (_) {
                 try {
                   const parsed = JSON.parse(atob(cookie.value));
                   const t = parsed?.access_token || parsed?.[0];
-                  if (t) { token = t; await chrome.storage.local.set({ supabase_token: t }); break; }
+                  if (t) {
+                    token = t;
+                    const isProd = target.url.includes("vercel.app") || target.url.includes("study-tracker");
+                    const backendUrl = isProd ? "https://promaxrahul-study-tracker-backend.hf.space" : "http://localhost:8000";
+                    await chrome.storage.local.set({ supabase_token: t, backend_url: backendUrl });
+                    break;
+                  }
                 } catch (__) {}
               }
             }
@@ -309,10 +323,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!token) {
       statusBadge.textContent = "Disconnected";
       statusBadge.className = "status-badge";
+      // Resolve BACKEND_URL dynamically to know which login page link to show
+      const storedBackend = await chrome.storage.local.get(["backend_url"]);
+      const appUrl = (storedBackend.backend_url || "").includes("promaxrahul")
+        ? "https://study-tracker-patil.vercel.app"
+        : "http://localhost:3000";
       profileDetails.innerHTML = `
         <div style="text-align:center; padding:10px 0;">
           <p style="margin:0 0 8px; font-size:12px; color:#94a3b8;">Not logged in to Study Tracker.</p>
-          <a href="http://localhost:3000" target="_blank" style="color:#6366f1; font-weight:600; font-size:12px; text-decoration:none;">Open App & Log In →</a>
+          <a href="${appUrl}" target="_blank" style="color:#6366f1; font-weight:600; font-size:12px; text-decoration:none;">Open App & Log In →</a>
         </div>
       `;
       manualLoginBox.style.display = "flex";
@@ -320,11 +339,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    // Resolve BACKEND_URL from local storage or open tabs
+    const storedBackend = await chrome.storage.local.get(["backend_url"]);
+    if (storedBackend.backend_url) {
+      BACKEND_URL = storedBackend.backend_url;
+    } else {
+      try {
+        const tabs = await chrome.tabs.query({});
+        const hasLocal = tabs.some(t => t.url && (t.url.includes("localhost") || t.url.includes("127.0.0.1")));
+        const hasProd = tabs.some(t => t.url && (t.url.includes("vercel.app") || t.url.includes("study-tracker")));
+        if (hasProd && !hasLocal) {
+          BACKEND_URL = "https://promaxrahul-study-tracker-backend.hf.space";
+        } else {
+          BACKEND_URL = "http://localhost:8000";
+        }
+      } catch (_) {
+        BACKEND_URL = "http://localhost:8000";
+      }
+    }
+
     // Fetch profile
     try {
-      const res = await fetch(`${BACKEND_URL}/profile`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+      let res;
+      try {
+        res = await fetch(`${BACKEND_URL}/profile`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+      } catch (err) {
+        // Fallback to alternative backend URL if fetch failed (network error)
+        const altUrl = BACKEND_URL === "http://localhost:8000"
+          ? "https://promaxrahul-study-tracker-backend.hf.space"
+          : "http://localhost:8000";
+        res = await fetch(`${altUrl}/profile`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          BACKEND_URL = altUrl;
+          await chrome.storage.local.set({ backend_url: BACKEND_URL });
+        } else {
+          throw err;
+        }
+      }
 
       if (!res.ok) throw new Error(`Session expired (${res.status})`);
 
@@ -377,7 +432,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         tokenToSave = parsed.access_token || parsed.token || rawVal;
       } catch (_) {}
     }
-    await chrome.storage.local.set({ supabase_token: tokenToSave });
+
+    // Set default backendUrl based on active tab or open tabs
+    let backendUrl = "http://localhost:8000";
+    try {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const isProd = activeTab?.url && (activeTab.url.includes("vercel.app") || activeTab.url.includes("study-tracker"));
+      if (isProd) {
+        backendUrl = "https://promaxrahul-study-tracker-backend.hf.space";
+      } else {
+        const tabs = await chrome.tabs.query({});
+        const hasProd = tabs.some(t => t.url && (t.url.includes("vercel.app") || t.url.includes("study-tracker")));
+        const hasLocal = tabs.some(t => t.url && (t.url.includes("localhost") || t.url.includes("127.0.0.1")));
+        if (hasProd && !hasLocal) {
+          backendUrl = "https://promaxrahul-study-tracker-backend.hf.space";
+        }
+      }
+    } catch (_) {}
+
+    await chrome.storage.local.set({ supabase_token: tokenToSave, backend_url: backendUrl });
     manualTokenInput.value = "";
     saveManualTokenBtn.textContent = "Save";
     saveManualTokenBtn.disabled = false;

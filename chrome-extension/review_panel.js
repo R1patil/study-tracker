@@ -4,7 +4,7 @@
  * per-field regeneration with custom instruction, and apply.
  */
 
-const BACKEND_URL = "http://localhost:8000";
+let BACKEND_URL = "http://localhost:8000";
 
 // ─────────────────────────────────────────────
 // FIELD DEFINITIONS — display config for each AI field
@@ -392,6 +392,14 @@ async function applyTailoredProfile() {
 async function init() {
   document.getElementById("loading-overlay").style.display = "flex";
   setStatus("Loading AI tailored fields...", "#f59e0b");
+
+  // Resolve BACKEND_URL from chrome storage
+  try {
+    const storedBackend = await chrome.storage.local.get(["backend_url"]);
+    if (storedBackend.backend_url) {
+      BACKEND_URL = storedBackend.backend_url;
+    }
+  } catch (_) {}
 
   try {
     const stored = await chrome.storage.local.get([
