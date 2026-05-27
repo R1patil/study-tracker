@@ -22,6 +22,8 @@
 
 🌐 **[Live Demo](https://study-tracker-patil.vercel.app)** &nbsp;|&nbsp; 📺 **[YouTube Channel](https://www.youtube.com/@R-B107)** &nbsp;|&nbsp; ⭐ **Star this repo if you find it useful!**
 
+🏆 **Proudly built for the [Coral Hackathon](https://www.wemakedevs.org/hackathons/coral)**
+
 </div>
 
 ---
@@ -31,7 +33,9 @@
 | Feature | Description |
 |---|---|
 | 🔐 **Auth** | Email + Password signup/login via Supabase |
-| 👤 **Per-user data** | Every user has their own private progress |
+| 🧠 **Jarvis AI Mentor** | An empathetic, high-EQ AI agent that monitors your progress, calendar, and screen time using **Coral SQL**, guiding you with first-principles and yogic wisdom. |
+| 🕵️ **Desktop Activity Tracker** | A local Windows daemon that tracks your active windows and detects 5-minute "distraction spikes", pushing real-time interventions. |
+| 👤 **Per-user data** | Every user has their own private progress in Supabase PostgreSQL |
 | ✅ **Topic tracking** | Mark topics as Not Started / In Progress / Done |
 | 📝 **Notes** | Add personal notes and key takeaways per topic |
 | ⏱️ **Study Timer** | Per-topic and global session timer |
@@ -39,6 +43,19 @@
 | 📊 **Dashboard** | Live progress % across all tracks |
 | 📺 **YouTube Challenges** | Add, embed, and track your own YouTube videos |
 | 🔗 **Direct links** | Every topic links directly to its resource |
+
+---
+
+## 🐚 Powered by Coral (Hackathon Submission)
+
+This project was built to showcase the incredible power of the **Coral SQL engine** for AI Agent tool-calling. 
+
+Instead of writing dozens of complex API wrappers to fetch GitHub repository data or internal PostgreSQL metrics, **Jarvis (our LLaMA-3.3 70B AI Agent)** is equipped with a single tool: `execute_coral_sql`. 
+
+By leveraging Coral, the AI can:
+1. **Query GitHub Natively**: Analyze `readme.md`, directory structures, and branches via `SELECT * FROM github.trees WHERE owner = '...'`.
+2. **Monitor Student Behavior**: Execute queries against `student_activity.activity`, `student_progress.progress`, and `student_calendar.events` to instantly know if you've been distracted by Instagram during your scheduled study blocks.
+3. **Zero Boilerplate**: Coral eliminates the need for massive data extraction layers. The AI simply writes ANSI SQL, and Coral delivers the structured JSON results instantly.
 
 ---
 
@@ -86,9 +103,10 @@ The curriculum is sourced from 3 of the most popular GitHub repos in the communi
 
 ### Backend
 - **FastAPI** — REST API
+- **Coral CLI** — SQL Engine for GitHub & PostgreSQL integrations
+- **Groq API** — Ultra-fast LLaMA-3.3-70B inference for Jarvis AI
 - **Python 3.11** — Core language
-- **httpx** — Async HTTP for Supabase JWT verification
-- **JSON file storage** — Per-user progress
+- **httpx** — Async HTTP for Supabase queries and JWT verification
 
 ### Infrastructure
 - **Supabase** — Authentication + Row Level Security
