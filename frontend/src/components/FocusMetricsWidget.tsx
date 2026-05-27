@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getActivitySummary } from "../lib/api";
+import { getActivitySummary, getCurrentActivity } from "../lib/api";
 
 interface AppMetric {
   name: string;
@@ -18,9 +18,11 @@ interface ActivitySummary {
 
 export default function FocusMetricsWidget() {
   const [data, setData] = useState<ActivitySummary | null>(null);
+  const [currentApp, setCurrentApp] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load summary
     getActivitySummary()
       .then((res) => {
         setData(res);
@@ -30,6 +32,19 @@ export default function FocusMetricsWidget() {
         console.error("Failed to load activity logs:", err);
         setLoading(false);
       });
+
+    // Load current active app and poll every 5s
+    getCurrentActivity()
+      .then(setCurrentApp)
+      .catch(console.error);
+
+    const interval = setInterval(() => {
+      getCurrentActivity()
+        .then(setCurrentApp)
+        .catch(console.error);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -62,9 +77,40 @@ export default function FocusMetricsWidget() {
           </h3>
         </div>
         <span className="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20 font-mono">
-          WSL Daemon Active
+          Rust Daemon Active
         </span>
       </div>
+
+      {/* Live Active App Status */}
+      {currentApp && currentApp.app !== "None" && (
+        <div className="mb-5 p-3 rounded-xl bg-indigo-950/20 border border-indigo-500/10 flex flex-col gap-1.5 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[9px] text-text-secondary uppercase tracking-wider font-semibold">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Live studying
+            </div>
+            <span className={`text-[8px] uppercase px-1.5 py-0.5 rounded font-mono font-bold tracking-wider ${
+              currentApp.category === 'productive' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/20' :
+              currentApp.category === 'passive' ? 'bg-amber-950/80 text-amber-400 border border-amber-500/20' :
+              currentApp.category === 'distracted' ? 'bg-red-950/80 text-red-400 border border-red-500/20' :
+              'bg-muted/80 text-text-secondary border border-border/20'
+            }`}>
+              {currentApp.category || 'Idle'}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-text-primary truncate" title={currentApp.title}>
+              {currentApp.title}
+            </p>
+            <p className="text-[9px] text-text-secondary font-mono mt-0.5">
+              {currentApp.app}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Main Focus score */}
       <div className="flex items-center gap-6 mb-5">

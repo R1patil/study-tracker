@@ -488,6 +488,7 @@ import CustomTrackView from "@/components/CustomTrackView";
 import JarvisChat from "@/components/JarvisChat";
 import SearchWidget from "@/components/SearchWidget";
 import FocusMetricsWidget from "@/components/FocusMetricsWidget";
+import DistractionInterventionBanner from "@/components/DistractionInterventionBanner";
 
 const getSprintTemplate = (title: string) => {
     const t = title.toLowerCase();
@@ -799,6 +800,14 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Phase 2: AI-powered proactive intervention banner */}
+            <DistractionInterventionBanner
+                onSprintAccepted={(topicId, topicTitle) => {
+                    setInterventionActive(false);
+                    refresh();
+                }}
+            />
 
             {/* INTERVENTION MODAL */}
             {showModal && (
