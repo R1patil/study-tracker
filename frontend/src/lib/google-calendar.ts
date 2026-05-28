@@ -30,7 +30,7 @@ export async function addToGoogleCalendarAPI(
 
     const event = {
         summary: `📚 Review: ${topic.title}`,
-        description: `Spaced repetition review\n\nTopic: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nAdded by Study Tracker App`,
+        description: `Spaced repetition review\n\nTopic: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nAdded by JollyRoger.AI App`,
         start: { date: startDate },    // all-day event
         end: { date: endDateStr },
         colorId: "9",                  // blueberry color
@@ -77,7 +77,7 @@ export function openGoogleCalendarUrl(topic: SRTopic): void {
 
     const title = encodeURIComponent(`📚 Review: ${topic.title}`);
     const details = encodeURIComponent(
-        `Spaced repetition review\n\nTopic: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nAdded by Study Tracker App`
+        `Spaced repetition review\n\nTopic: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nAdded by JollyRoger.AI App`
     );
 
     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${date}/${endDateStr}&details=${details}`;

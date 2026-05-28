@@ -12,7 +12,7 @@ export default function JarvisChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I am **Jarvis**, your Student OS coach and mentor. I have connected to your study trackers, calendar, active window logs, and search history via Coral.\n\nAsk me how your focus is today, request study recommendations, or let's draft an interview prep roadmap!",
+      content: "Ahoy! I am **Captain Jarvis**, your spiritual career navigator on the high CS learning seas! I have anchored my compass to your progress, calendar, active window logs, and search history via Coral.\n\nAsk me how your focus is today, request study recommendations, or let's draft an interview prep roadmap!",
     },
   ]);
   const [input, setInput] = useState("");
@@ -49,7 +49,7 @@ export default function JarvisChat() {
         ...prev,
         {
           role: "assistant",
-          content: "⚠️ **System Error:** Failed to establish connection with Jarvis. Please make sure the backend server and Coral are running.",
+          content: "⚠️ **System Error:** Failed to establish connection with Captain Jarvis. Please make sure the backend server and Coral are running.",
         },
       ]);
     } finally {
@@ -69,10 +69,10 @@ export default function JarvisChat() {
       <div className="px-5 py-4 border-b border-indigo-500/20 bg-indigo-950/20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white jarvis-avatar-pulse border border-indigo-400">
-            🤖
+            🧭
           </div>
           <div>
-            <h3 className="font-semibold text-sm text-indigo-200 tracking-wide">JARVIS AI MENTOR</h3>
+            <h3 className="font-semibold text-sm text-indigo-200 tracking-wide">CAPTAIN JARVIS</h3>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-[10px] text-text-secondary uppercase">Connected to Coral SQL</span>
@@ -143,7 +143,7 @@ export default function JarvisChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Ask Jarvis (e.g. How is my focus today?)"
+          placeholder="Ask Captain Jarvis (e.g. How is my focus today?)"
           className="flex-1 bg-surface2 border border-border/60 hover:border-indigo-500/30 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-all duration-200"
         />
         <button
