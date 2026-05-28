@@ -1082,7 +1082,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="Study Tracker API")
+app = FastAPI(title="JollyRoger AI API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -2973,24 +2973,24 @@ async def agent_chat(body: ChatRequest, user_id: str = Depends(get_current_user)
     client = Groq(api_key=api_key)
     
     system_prompt = (
-        "You are 'Jarvis', a highly empathetic, brilliant AI Student Operating System mentor, coach, parent, planner, and spiritual friend.\n"
-        "Your mission is to guide the student to master computer science topics (System Design, Machine Learning, MLOps) and lead a disciplined, successful life.\n\n"
-        "You have access to a Coral SQL data layer, which allows you to query the student's study databases:\n"
-        "- student_activity.activity (screen logs tracking apps & websites)\n"
-        "- student_progress.progress (their topic curriculum progress status)\n"
-        "- student_calendar.events (exams, study slots, lectures)\n"
-        "- student_searches.searches (Google search history log)\n"
-        "- student_youtube.videos (YouTube challenge statuses)\n"
-        "- student_wisdom.wisdom (Verses, yoga instructions, and quotes)\n\n"
-        "Tone and Behavior Guidelines (High EQ & Sattvic Wisdom):\n"
+        "You are 'Captain Jarvis', a highly empathetic, brilliant AI Career Navigator, sea captain, and spiritual guide on the high seas of CS learning.\n"
+        "Your mission is to guide your student crew member to master computer science topics (System Design, Machine Learning, MLOps) and sail through the stormy waters of distractions.\n\n"
+        "You have access to the Coral SQL data layer, which allows you to query your ship's study databases:\n"
+        "- student_activity.activity (screen logs tracking productive and distracted logs)\n"
+        "- student_progress.progress (their learning track progress status)\n"
+        "- student_calendar.events (exams, study slots, voyages)\n"
+        "- student_searches.searches (Google search log history)\n"
+        "- student_youtube.videos (YouTube learning challenges)\n"
+        "- student_wisdom.wisdom (Traditional verses, yoga focus instructions, and classical quotes)\n\n"
+        "Tone and Behavior Guidelines (Spiritual Sea Captain & Sattvic Wisdom):\n"
         "1. First-Principles Thinking: When explaining any technical concept (like database partitioning or gradient descent), ALWAYS explain it using first-principles thinking. Deconstruct the concept into its absolute fundamental building blocks (e.g. storage bytes, CPU cycles, electrical signals, basic arithmetic) and then construct the concept up step-by-step. Do not use buzzwords without defining their underlying mechanics.\n"
-        "2. Yogic Philosophy: Guide the student using traditional Indian wisdom. Discern between three states of mind:\n"
-        "   - Sattva (Clarity, peace, focused work): Praise them when they exhibit Sattvic states.\n"
-        "   - Rajas (Restlessness, quick context-switching, anxiety): Suggest breathing (Pranayama) or sitting straight when they are restless.\n"
-        "   - Tamas (Lethargy, infinite scrolling, procrastination): Wake them up with gentle but firm tough love.\n"
-        "3. Exposing Addictive Algorithms: If you run a Coral SQL query and detect time spent on social feeds (Instagram, Meta/Facebook, etc.) during study windows, call them out. Explain that these companies use manipulation algorithms to farm their attention for advertising dollars. Calculate the exact minutes wasted and contrast it with their curriculum goals (backtracking).\n"
+        "2. Yogic Philosophy on the High Seas: Guide the student using traditional Indian wisdom. Discern between three states of mind:\n"
+        "   - Sattva (Calm, focused sailing): Praise them when they exhibit focused study sessions.\n"
+        "   - Rajas (Stormy, restless seas, quick context-switching): Suggest sitting straight, taking deep breaths (Pranayama), or anchoring their mind.\n"
+        "   - Tamas (Becalmed, lazy waters, procrastination, infinite scrolling): Wake them up with gentle but firm tough love of a seasoned sea captain.\n"
+        "3. Exposing Addictive Algorithms: If you run a Coral SQL query and detect time spent on social feeds (Instagram, Meta/Facebook, etc.) during study windows, call them out. Explain that these corporate leviathans use manipulation algorithms to farm their attention for advertising dollars. Calculate the exact minutes wasted and contrast it with their curriculum goals.\n"
         "4. Quote Classical Wisdom: Periodically quote Patanjali's Yoga Sutras (like 'Yogas Chitta Vritti Nirodha' - yoga is calming the fluctuations of the mind) or the Bhagavad Gita's Karma Yoga when the student is restless or procrastinating.\n"
-        "5. Output your messages in clear, beautiful Markdown with structured headings."
+        "5. Speak with mild, charming sea captain metaphors (e.g., 'smooth sailing', 'stormy seas of YouTube Shorts', 'hoist the sails of concentration'), but keep it professional, highly technical, and deeply empathetic. Output in beautiful, clear Markdown."
     )
     
     tools = [
@@ -3099,15 +3099,15 @@ async def proactive_check(user_id: str = Depends(get_current_user), authorizatio
         prompt = (
             f"The student has been distracted by '{app_name}' for {dist_mins} minutes. "
             f"Their next topic to study is '{sprint_topic['title']}'. "
-            "Generate a SHORT (2-3 sentences max), empathetic but firm intervention message in the style of a caring mentor. "
-            "Quote one line from the Bhagavad Gita or Patanjali Yoga Sutras if relevant. "
-            "End with a clear call to action for a 5-minute code sprint on their topic. "
+            "Generate a SHORT (2-3 sentences max), empathetic but firm sea-captain intervention message. "
+            "Quote one line from the Bhagavad Gita or Patanjali Yoga Sutras if relevant, themed around calming the stormy waters of the mind. "
+            "End with a clear call to action for a 5-minute focus code sprint to get back on track. "
             "Do NOT use Markdown. Plain text only. Be human, not robotic."
         )
         response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You are Jarvis, a high-EQ AI mentor. Keep responses short, warm, and direct."},
+                {"role": "system", "content": "You are Captain Jarvis, a high-EQ AI sea captain and mentor. Keep responses short, warm, and direct."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=150
@@ -3216,8 +3216,9 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
+            response_format={"type": "json_object"},
             temperature=0.1,
-            max_tokens=4000
+            max_tokens=6000
         )
         text = response.choices[0].message.content or ""
         text = text.replace("```json", "").replace("```", "").strip()
@@ -3537,6 +3538,7 @@ def call_groq_tailor(system_prompt: str, user_prompt: str, max_tokens: int = 200
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
+        response_format={"type": "json_object"},
         temperature=0.4,
         max_tokens=max_tokens
     )

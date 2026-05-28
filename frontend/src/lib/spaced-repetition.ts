@@ -106,7 +106,7 @@ export function buildGCalUrl(topic: SRTopic): string {
     const date = topic.nextReview.replace(/-/g, "");
     const title = encodeURIComponent(`📚 Review: ${topic.title}`);
     const details = encodeURIComponent(
-        `Spaced repetition review for: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nStudy Tracker App`
+        `Spaced repetition review for: ${topic.title}\nTrack: ${topic.trackTitle}\nReview #${topic.reviewCount + 1} — Interval: ${getIntervalLabel(topic.intervalIndex)}\n\nJollyRoger.AI App`
     );
     // All-day event
     const nextDay = new Date(topic.nextReview);

@@ -685,8 +685,8 @@ export default function DashboardPage() {
     if (loading) {
         return (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #6366f1", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
-                <p style={{ color: "var(--text-secondary)", fontFamily: "monospace", fontSize: 12 }}>Loading your progress...</p>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #2aa198", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+                <p style={{ color: "var(--text-secondary)", fontFamily: "monospace", fontSize: 12 }}>Loading your voyage logs...</p>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
@@ -742,9 +742,9 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-4">
                                 <span className="text-2xl">🧘</span>
                                 <div>
-                                    <h4 className="font-bold text-sm tracking-wide text-indigo-300">Jarvis OS: Attention Inconsistency Detected!</h4>
+                                    <h4 className="font-bold text-sm tracking-wide text-indigo-300">JollyRoger.AI: Stormy Distraction Waves Spotted!</h4>
                                     <p className="text-xs text-indigo-300/80 mt-0.5">
-                                        I noticed you got sidetracked on <span className="font-semibold text-red-400">{interventionDetails?.most_distracting_app || "distractions"}</span> for {interventionDetails?.distracted_mins || "several"} minutes. Let's reset your focus with a 1-min Pranayama and a 5-min Code Sprint!
+                                        I noticed you got sidetracked on <span className="font-semibold text-red-400">{interventionDetails?.most_distracting_app || "distractions"}</span> for {interventionDetails?.distracted_mins || "several"} minutes. Let's calm the waters with 1-min Pranayama and a 5-min Code Sprint!
                                     </p>
                                 </div>
                             </div>

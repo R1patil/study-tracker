@@ -1,4 +1,4 @@
-// Jarvis OS — Desktop Activity Daemon v3.0 (Rust)
+// JollyRoger.AI — Desktop Activity Daemon v3.0 (Rust)
 // Replaces: backend/activity_logger.py
 //
 // Features:
@@ -286,7 +286,7 @@ fn category_icon(cat: &Category) -> &'static str {
 #[tokio::main]
 async fn main() {
     println!("============================================================");
-    println!("  Jarvis OS Activity Daemon v3.0 (Rust)");
+    println!("  JollyRoger.AI Activity Daemon v3.0 (Rust)");
     println!("  Polling every {}s | Pushing every {}s", POLL_INTERVAL_SECS, PUSH_INTERVAL_SECS);
     println!("  Backend: {}", BACKEND_URL);
     println!("  Ntfy Topic: ntfy.sh/{}", NTFY_TOPIC);
@@ -386,7 +386,7 @@ async fn push_batch(client: &Client, batch: &Arc<Mutex<Vec<ActivityEvent>>>) {
 
                 if data.distraction_spike_active.unwrap_or(false) {
                     if let Some(details) = data.distraction_spike_details {
-                        let title = "Jarvis Focus Alert ⚠️";
+                        let title = "JollyRoger Focus Alert ⚠️";
                         let msg = format!(
                             "You've been distracted by {} for {:.0} mins. Time to focus!",
                             details.most_distracting_app, details.distracted_mins

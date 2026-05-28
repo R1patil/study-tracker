@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Study Tracker — ML & System Design",
-  description: "Track ML, System Design, and MLOps progress",
+  title: "JollyRoger.AI — The High-Seas AI Career Co-Pilot",
+  description: "Navigate ML, System Design, and MLOps curriculum tracks powered by Coral SQL.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

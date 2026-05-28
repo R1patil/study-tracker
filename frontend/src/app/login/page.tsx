@@ -55,10 +55,10 @@ export default function LoginPage() {
             <div style={styles.card}>
                 {/* Logo */}
                 <div style={styles.logo}>
-                    <div style={styles.logoIcon}>📚</div>
+                    <div style={styles.logoIcon}>🧭</div>
                     <div>
-                        <div style={styles.logoTitle}>Study Tracker</div>
-                        <div style={styles.logoSub}>Track your ML & System Design journey</div>
+                        <div style={styles.logoTitle}>JollyRoger.AI</div>
+                        <div style={styles.logoSub}>Navigate your ML, System Design & MLOps voyages</div>
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@ const styles: Record<string, React.CSSProperties> = {
     },
     logo: { display: "flex", alignItems: "center", gap: 12, marginBottom: 32 },
     logoIcon: {
-        width: 40, height: 40, borderRadius: 10, background: "#6366f1",
+        width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #2aa198, #d4af37)",
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
     },
     logoTitle: { fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "var(--text-primary)" },
