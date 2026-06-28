@@ -362,7 +362,7 @@ export default function Sidebar({
             <div style={{ padding: "20px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg, #2aa198, #d4af37)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🧭</div>
                 <div>
-                    <div style={{ color: "var(--text-primary)", fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 13 }}>JollyRoger.AI</div>
+                    <div style={{ color: "var(--text-primary)", fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 13 }}>Study Tracker</div>
                     <div style={{ color: "var(--text-secondary)", fontFamily: "monospace", fontSize: 9 }}>by Captain Rahul</div>
                 </div>
             </div>

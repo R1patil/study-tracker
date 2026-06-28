@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "JollyRoger.AI — The High-Seas AI Career Co-Pilot",
+  title: "Study Tracker",
   description: "Navigate ML, System Design, and MLOps curriculum tracks powered by Coral SQL.",
 };
 

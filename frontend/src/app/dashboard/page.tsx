@@ -487,7 +487,7 @@ import DailyRecommendations from "@/components/DailyRecommendations";
 import CustomTrackView from "@/components/CustomTrackView";
 import JarvisChat from "@/components/JarvisChat";
 import SearchWidget from "@/components/SearchWidget";
-import FocusMetricsWidget from "@/components/FocusMetricsWidget";
+
 import DistractionInterventionBanner from "@/components/DistractionInterventionBanner";
 
 const getSprintTemplate = (title: string) => {
@@ -793,7 +793,7 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="w-full xl:w-[380px] shrink-0 flex flex-col gap-6">
-                            <FocusMetricsWidget />
+
                             <SearchWidget />
                             <JarvisChat />
                         </div>
