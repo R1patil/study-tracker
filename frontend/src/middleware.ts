@@ -25,8 +25,8 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
 
-    // Redirect logged-in users away from auth pages
-    if (user && (pathname === "/login" || pathname === "/signup" || pathname === "/")) {
+    // Redirect logged-in users away from auth pages to dashboard
+    if (user && (pathname === "/login" || pathname === "/signup")) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
@@ -39,5 +39,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/", "/login", "/signup", "/dashboard/:path*"],
+    // "/" is now a public landing page — not in matcher so middleware won't block it
+    matcher: ["/login", "/signup", "/dashboard/:path*"],
 };
