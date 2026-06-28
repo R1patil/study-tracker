@@ -485,7 +485,7 @@ import UserMenu from "@/components/auth/UserMenu";
 import ReviewToday from "@/components/ReviewToday";
 import DailyRecommendations from "@/components/DailyRecommendations";
 import CustomTrackView from "@/components/CustomTrackView";
-import JarvisChat from "@/components/JarvisChat";
+
 import SearchWidget from "@/components/SearchWidget";
 
 import DistractionInterventionBanner from "@/components/DistractionInterventionBanner";
@@ -795,7 +795,7 @@ export default function DashboardPage() {
                         <div className="w-full xl:w-[380px] shrink-0 flex flex-col gap-6">
 
                             <SearchWidget />
-                            <JarvisChat />
+
                         </div>
                     </div>
                 </div>
