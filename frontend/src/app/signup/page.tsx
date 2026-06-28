@@ -70,8 +70,7 @@ export default function SignupPage() {
                 <div style={styles.logo}>
                     <div style={styles.logoIcon}>🧭</div>
                     <div>
-                        <div style={styles.logoTitle}>JollyRoger.AI</div>
-                        <div style={styles.logoSub}>Navigate your ML, System Design & MLOps voyages</div>
+                        <div style={styles.logoTitle}>Study Tracker</div>
                     </div>
                 </div>
 
