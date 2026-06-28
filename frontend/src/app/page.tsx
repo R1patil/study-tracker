@@ -43,7 +43,6 @@ export default function HomePage() {
             <section style={s.features}>
                 {FEATURES.map(f => (
                     <div key={f.title} style={s.feat}>
-                        <div style={s.featIcon}>{f.icon}</div>
                         <h3 style={s.featTitle}>{f.title}</h3>
                         <p style={s.featDesc}>{f.desc}</p>
                     </div>
@@ -74,10 +73,10 @@ export default function HomePage() {
 }
 
 const FEATURES = [
-    { icon: "📚", title: "Topic Tracking", desc: "Log what you study. See exactly how far you've come." },
-    { icon: "🔁", title: "Spaced Repetition", desc: "Smart reminders so you review at the perfect time." },
-    { icon: "📅", title: "Calendar Sync", desc: "Adds study reminders directly to Google Calendar." },
-    { icon: "📊", title: "Progress View", desc: "Streaks, scores, and charts. Stay motivated." },
+    { title: "Topic Tracking", desc: "Log what you study. See exactly how far you've come." },
+    { title: "Spaced Repetition", desc: "Smart reminders so you review at the perfect time." },
+    { title: "Calendar Sync", desc: "Adds study reminders directly to Google Calendar." },
+    { title: "Progress View", desc: "Streaks, scores, and charts. Stay motivated." },
 ];
 
 const s: Record<string, React.CSSProperties> = {
@@ -156,7 +155,6 @@ const s: Record<string, React.CSSProperties> = {
         gap: 48,
     },
     feat: {},
-    featIcon: { fontSize: 28, marginBottom: 16 },
     featTitle: { fontSize: 17, fontWeight: 600, color: "#1d1d1f", marginBottom: 8, letterSpacing: "-0.2px" },
     featDesc: { fontSize: 14, color: "#6e6e73", lineHeight: 1.6, margin: 0 },
 
