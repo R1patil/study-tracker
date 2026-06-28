@@ -3177,7 +3177,7 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
             pass
             
     file_paths = [f.get("path") for f in body.files if f.get("type") == "blob"]
-    truncated_files = file_paths[:250]
+    truncated_files = file_paths[:100]
     
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
@@ -3204,7 +3204,7 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
         f"Owner: {body.owner}\n"
         f"Total Files found: {len(file_paths)}\n"
         f"Sample File list:\n{json.dumps(truncated_files, indent=2)}\n\n"
-        f"README Content:\n{readme_content[:6000] if readme_content else 'No README content available.'}\n\n"
+        f"README Content:\n{readme_content[:3000] if readme_content else 'No README content available.'}\n\n"
         f"Please extract all learning topics, folders, and key files, and organize them into a step-by-step study path. "
         f"Generate the exact URL for each file under the branch '{body.branch}' for the repo '{body.owner}/{body.repo}'."
     )
@@ -3218,7 +3218,7 @@ async def analyze_github_repo(body: AnalyzeRequest, user_id: str = Depends(get_c
             ],
             response_format={"type": "json_object"},
             temperature=0.1,
-            max_tokens=6000
+            max_tokens=2500
         )
         text = response.choices[0].message.content or ""
         text = text.replace("```json", "").replace("```", "").strip()
